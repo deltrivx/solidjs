@@ -47,4 +47,4 @@ npm run serve
 ```
 
 ---
-*Made with ❤️ by Gemini CLI*
+*Made with ❤️ by KrisChan*
