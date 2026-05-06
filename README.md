@@ -15,8 +15,13 @@
   - Hash 路由模式，兼容所有服务器环境
 
 ## 📁 目录结构
-- `*.jsx`: 页面与组件源代码
-- `css/style.css`: 全局样式表
+- `src/`: 核心源代码目录
+  - `components/`: 可复用的页面组件
+  - `pages/`: 独立视图/页面组件
+  - `data/`: 静态数据
+  - `utils/`: 动画及工具函数
+  - `css/style.css`: 全局样式表
+  - `App.jsx` & `index.jsx`: 根组件与应用入口
 - `dist/`: 打包生成的正式上线文件
 - `vite.config.js`: 构建配置文件
 
