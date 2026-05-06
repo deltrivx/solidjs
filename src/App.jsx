@@ -1,7 +1,7 @@
 import { onMount, onCleanup } from 'solid-js';
-import Navbar from './Navbar';
-import Footer from './Footer';
-import Particles from './Particles';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Particles from './components/Particles';
 
 export default function App(props) {
   let spotlightRef;

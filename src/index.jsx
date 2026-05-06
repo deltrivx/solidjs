@@ -2,12 +2,12 @@ import { render } from 'solid-js/web';
 import { HashRouter, Route } from '@solidjs/router';
 import { MetaProvider, Title, Meta } from '@solidjs/meta';
 import App from './App';
-import Home from './Home';
-import About from './About';
-import Skills from './Skills';
-import Projects from './Projects';
-import Contact from './Contact';
-import NotFound from './NotFound';
+import Home from './pages/Home';
+import About from './pages/About';
+import Skills from './pages/Skills';
+import Projects from './pages/Projects';
+import Contact from './pages/Contact';
+import NotFound from './pages/NotFound';
 import './css/style.css'; // 引入全局样式
 
 render(

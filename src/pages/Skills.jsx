@@ -1,6 +1,6 @@
 import { onMount, For } from 'solid-js'; // 导入 For 组件
-import { initReveal, initTilt } from './animations';
-import skillsData from './skillsData'; // 导入技能数据
+import { initReveal, initTilt } from '../utils/animations';
+import skillsData from '../data/skillsData'; // 导入技能数据
 
 export default function Skills() {
     onMount(() => {

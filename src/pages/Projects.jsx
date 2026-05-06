@@ -1,6 +1,6 @@
 import { onMount } from 'solid-js';
 import { A } from '@solidjs/router';
-import { initReveal, initTilt } from './animations';
+import { initReveal, initTilt } from '../utils/animations';
 
 export default function Projects() {
     onMount(() => {

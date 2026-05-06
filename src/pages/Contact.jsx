@@ -1,5 +1,5 @@
 import { onMount, createSignal } from 'solid-js';
-import { initReveal } from './animations';
+import { initReveal } from '../utils/animations';
 
 export default function Contact() {
     // SolidJS 强大的状态管理：控制按钮文案与颜色

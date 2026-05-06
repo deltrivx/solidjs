@@ -1,5 +1,5 @@
 import { onMount } from 'solid-js';
-import { initReveal } from './animations';
+import { initReveal } from '../utils/animations';
 
 export default function About() {
     onMount(() => {
