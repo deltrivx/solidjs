@@ -1,0 +1,35 @@
+/**
+ * 技能数据数组，用于动态渲染 Skills 页面。
+ * 每个对象包含技能卡片的图标、标题、描述和技术标签列表。
+ */
+const skillsData = [
+    {
+        icon: '🎨',
+        title: '前端开发',
+        description: '构建响应式、交互丰富的现代 Web 应用',
+        tags: ['React', 'Vue.js', 'TypeScript', 'Tailwind CSS']
+    },
+    {
+        icon: '⚙️',
+        title: '后端开发',
+        description: '设计高可用、可扩展的服务端架构',
+        tags: ['Node.js', 'Python', 'Go', 'PostgreSQL']
+    },
+    {
+        icon: '☁️',
+        title: 'DevOps & 云',
+        description: '自动化部署，保障系统稳定运行',
+        tags: ['Docker', 'K8s', 'AWS', 'CI/CD']
+    },
+    {
+        icon: '🤖',
+        title: 'AI & AIGC',
+        description: '探索 AI 与 AIGC 视频创作的无限可能',
+        tags: [
+            'PyTorch', 'LLM', 'RAG', 'Agent',
+            'AIGC 视频', 'Runway', 'Sora', 'ComfyUI'
+        ]
+    }
+];
+
+export default skillsData;
