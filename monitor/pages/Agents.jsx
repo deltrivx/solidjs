@@ -1,20 +1,25 @@
-import { onMount } from 'solid-js';
+import { onMount, createSignal } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
 import AgentCard from '../components/AgentCard';
-import { agents, metrics } from '../data/mockData';
+import { getAgents, getMetrics } from '../data/mockData';
 
 export default function Agents() {
-  onMount(() => {
+  const [agents, setAgents] = createSignal([]);
+  const [metrics, setMetrics] = createSignal({});
+
+  onMount(async () => {
     initReveal();
     initTilt();
     initSpotlight();
+    setAgents(await getAgents());
+    setMetrics(await getMetrics());
   });
 
   return (
     <>
       <div class="breadcrumb">
-        <A href="/">🏛️ 总览</A>
+        <A href="/solidjs/monitor/">🏛️ 总览</A>
         <span class="sep">/</span>
         <span>Agent 列表</span>
       </div>
@@ -22,19 +27,21 @@ export default function Agents() {
       <section class="section">
         <div class="section-header reveal">
           <h2><span class="gradient-text">九部 Agent</span></h2>
-          <p>三省六部 · {metrics.agentsOnline}/9 在线</p>
+          <p>三省六部 · {metrics().agentsOnline || '?'}/9 在线</p>
         </div>
         <div class="agents-grid">
-          {agents.map((agent) => (
-            <AgentCard
-              name={agent.name}
-              title={agent.title}
-              status={agent.status}
-              icon={agent.icon}
-              tasks={agent.tasks}
-              lastActive={agent.lastActive}
-            />
-          ))}
+          <For each={agents()}>
+            {(agent) => (
+              <AgentCard
+                name={agent.name}
+                title={agent.title}
+                status={agent.status}
+                icon={agent.icon}
+                tasks={agent.tasks || 0}
+                lastActive={agent.lastActive || '--'}
+              />
+            )}
+          </For>
         </div>
       </section>
     </>
