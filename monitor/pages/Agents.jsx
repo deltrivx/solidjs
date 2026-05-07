@@ -1,19 +1,35 @@
-import { onMount, createSignal, For } from 'solid-js';
+import { onMount, createSignal, onCleanup } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
 import AgentCard from '../components/AgentCard';
-import { getAgents, getMetrics } from '../data/mockData';
+
+const API_URL = '/solidjs/monitor/api/data.json';
 
 export default function Agents() {
-  const [agents, setAgents] = createSignal, For([]);
-  const [metrics, setMetrics] = createSignal, For({});
+  const [agents, setAgents] = createSignal([]);
+  const [online, setOnline] = createSignal(0);
 
-  onMount(async () => {
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL + '?_=' + Date.now());
+      if (res.ok) {
+        const json = await res.json();
+        setAgents(json.agents || []);
+        const count = (json.agents || []).filter(a => a.status === 'online').length;
+        setOnline(count);
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  onMount(() => {
     initReveal();
     initTilt();
     initSpotlight();
-    setAgents(await getAgents());
-    setMetrics(await getMetrics());
+    loadData();
+    const timer = setInterval(loadData, 30000);
+    onCleanup(() => clearInterval(timer));
   });
 
   return (
@@ -27,7 +43,7 @@ export default function Agents() {
       <section class="section">
         <div class="section-header reveal">
           <h2><span class="gradient-text">九部 Agent</span></h2>
-          <p>三省六部 · {metrics().agentsOnline || '?'}/9 在线</p>
+          <p>三省六部 · {online()}/9 在线</p>
         </div>
         <div class="agents-grid">
           <For each={agents()}>
