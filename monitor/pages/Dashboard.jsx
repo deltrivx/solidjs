@@ -1,22 +1,41 @@
-import { onMount, createSignal, For } from 'solid-js';
+import { onMount, createSignal, onCleanup } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
 import MetricsGrid from '../components/MetricsGrid';
-import { getMetrics, getRecentActivities, getGateway } from '../data/mockData';
+
+const API_URL = '/solidjs/monitor/api/data.json';
 
 export default function Dashboard() {
-  const [metrics, setMetrics] = createSignal, For({});
-  const [activities, setActivities] = createSignal, For([]);
-  const [gateway, setGateway] = createSignal, For({});
+  const [data, setData] = createSignal({ metrics: {}, activities: [], gateway: {} });
 
-  onMount(async () => {
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL + '?_=' + Date.now());
+      if (res.ok) {
+        const json = await res.json();
+        setData({
+          metrics: json.metrics || {},
+          activities: json.recentActivities || [],
+          gateway: json.gateway || {},
+        });
+      }
+    } catch (e) {
+      console.warn('Monitor API fetch failed:', e);
+    }
+  }
+
+  onMount(() => {
     initReveal();
     initTilt();
     initSpotlight();
-    setMetrics(await getMetrics());
-    setActivities(await getRecentActivities());
-    setGateway(await getGateway());
+    loadData();
+    const timer = setInterval(loadData, 30000);
+    onCleanup(() => clearInterval(timer));
   });
+
+  const m = () => data().metrics;
+  const acts = () => data().activities;
+  const gw = () => data().gateway;
 
   return (
     <>
@@ -32,7 +51,7 @@ export default function Dashboard() {
             <A href="/solidjs/monitor/tasks" class="btn btn-outline">📋 任务队列</A>
           </div>
           <div style="margin-top:1rem;font-size:0.8rem;color:var(--text-secondary);">
-            最后更新: {gateway().updatedAt || '--'}
+            最后更新: {gw().updatedAt || '加载中...'}
           </div>
         </div>
       </section>
@@ -42,7 +61,7 @@ export default function Dashboard() {
           <h2><span class="gradient-text">系统指标</span></h2>
           <p>实时运行状态概览</p>
         </div>
-        <MetricsGrid metrics={metrics()} />
+        <MetricsGrid metrics={m()} />
       </section>
 
       <section class="section">
@@ -51,7 +70,7 @@ export default function Dashboard() {
           <p>最近 30 分钟的任务动态</p>
         </div>
         <div class="activity-timeline">
-          <For each={activities()}>
+          <For each={acts()}>
             {(act) => (
               <div class={`timeline-item reveal ${act.type}`}>
                 <div class="timeline-dot"></div>
@@ -63,6 +82,11 @@ export default function Dashboard() {
               </div>
             )}
           </For>
+          <Show when={acts().length === 0}>
+            <p style="text-align:center;color:var(--text-secondary);padding:2rem;">
+              暂无活动记录
+            </p>
+          </Show>
         </div>
       </section>
     </>
