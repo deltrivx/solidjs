@@ -1,12 +1,12 @@
-import { onMount, createSignal } from 'solid-js';
+import { onMount, createSignal, For } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
 import AgentCard from '../components/AgentCard';
 import { getAgents, getMetrics } from '../data/mockData';
 
 export default function Agents() {
-  const [agents, setAgents] = createSignal([]);
-  const [metrics, setMetrics] = createSignal({});
+  const [agents, setAgents] = createSignal, For([]);
+  const [metrics, setMetrics] = createSignal, For({});
 
   onMount(async () => {
     initReveal();
