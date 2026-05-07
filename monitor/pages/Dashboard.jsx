@@ -1,14 +1,21 @@
-import { onMount } from 'solid-js';
+import { onMount, createSignal } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
 import MetricsGrid from '../components/MetricsGrid';
-import { metrics, recentActivities } from '../data/mockData';
+import { getMetrics, getRecentActivities, getGateway } from '../data/mockData';
 
 export default function Dashboard() {
-  onMount(() => {
+  const [metrics, setMetrics] = createSignal({});
+  const [activities, setActivities] = createSignal([]);
+  const [gateway, setGateway] = createSignal({});
+
+  onMount(async () => {
     initReveal();
     initTilt();
     initSpotlight();
+    setMetrics(await getMetrics());
+    setActivities(await getRecentActivities());
+    setGateway(await getGateway());
   });
 
   return (
@@ -21,8 +28,11 @@ export default function Dashboard() {
             中书 → 门下 → 尚书 → 六部并行 · 全链路实时可观测
           </p>
           <div class="hero-buttons">
-            <A href="/agents" class="btn btn-primary">👥 查看 Agent</A>
-            <A href="/tasks" class="btn btn-outline">📋 任务队列</A>
+            <A href="/solidjs/monitor/agents" class="btn btn-primary">👥 查看 Agent</A>
+            <A href="/solidjs/monitor/tasks" class="btn btn-outline">📋 任务队列</A>
+          </div>
+          <div style="margin-top:1rem;font-size:0.8rem;color:var(--text-secondary);">
+            最后更新: {gateway().updatedAt || '--'}
           </div>
         </div>
       </section>
@@ -32,7 +42,7 @@ export default function Dashboard() {
           <h2><span class="gradient-text">系统指标</span></h2>
           <p>实时运行状态概览</p>
         </div>
-        <MetricsGrid metrics={metrics} />
+        <MetricsGrid metrics={metrics()} />
       </section>
 
       <section class="section">
@@ -41,16 +51,18 @@ export default function Dashboard() {
           <p>最近 30 分钟的任务动态</p>
         </div>
         <div class="activity-timeline">
-          {recentActivities.map((act) => (
-            <div class={`timeline-item reveal ${act.type}`}>
-              <div class="timeline-dot"></div>
-              <div class="timeline-content">
-                <span class="timeline-time">{act.time}</span>
-                <span class="timeline-agent">{act.agent}</span>
-                <span class="timeline-action">{act.action}</span>
+          <For each={activities()}>
+            {(act) => (
+              <div class={`timeline-item reveal ${act.type}`}>
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <span class="timeline-time">{act.time}</span>
+                  <span class="timeline-agent">{act.agent}</span>
+                  <span class="timeline-action">{act.action}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            )}
+          </For>
         </div>
       </section>
     </>
