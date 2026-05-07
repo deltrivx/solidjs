@@ -1,13 +1,13 @@
-import { onMount, createSignal } from 'solid-js';
+import { onMount, createSignal, For } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
 import MetricsGrid from '../components/MetricsGrid';
 import { getMetrics, getRecentActivities, getGateway } from '../data/mockData';
 
 export default function Dashboard() {
-  const [metrics, setMetrics] = createSignal({});
-  const [activities, setActivities] = createSignal([]);
-  const [gateway, setGateway] = createSignal({});
+  const [metrics, setMetrics] = createSignal, For({});
+  const [activities, setActivities] = createSignal, For([]);
+  const [gateway, setGateway] = createSignal, For({});
 
   onMount(async () => {
     initReveal();
