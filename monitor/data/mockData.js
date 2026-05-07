@@ -1,61 +1,35 @@
-// 实时数据采集 - 从服务器 API 获取
+// 实时数据采集 - 使用 createResource 支持异步加载和 Suspense
+import { createResource } from 'solid-js';
+
 const API_BASE = '/solidjs/monitor/api';
 
-export async function fetchDashboard() {
-  const res = await fetch(`${API_BASE}/data.json`);
+async function fetchDashboard() {
+  const res = await fetch(`${API_BASE}/data.json?_=${Date.now()}`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }
 
-// 缓存上一次数据，用于 fallback
-let cached = null;
-
-export async function getAgents() {
-  try {
-    const data = await fetchDashboard();
-    cached = data;
-    return data.agents;
-  } catch {
-    return cached?.agents || [];
-  }
+// createResource 信号：自动在 mount 时触发，支持 Suspense
+export function createDashboardResource() {
+  return createResource(fetchDashboard, { initialValue: null });
 }
 
-export async function getMetrics() {
-  try {
-    const data = await fetchDashboard();
-    cached = data;
-    return data.metrics;
-  } catch {
-    return cached?.metrics || {};
-  }
+export function useAgents(source) {
+  return () => source()?.agents || [];
 }
 
-export async function getRecentActivities() {
-  try {
-    const data = await fetchDashboard();
-    cached = data;
-    return data.recentActivities;
-  } catch {
-    return cached?.recentActivities || [];
-  }
+export function useMetrics(source) {
+  return () => source()?.metrics || {};
 }
 
-export async function getTaskQueue() {
-  try {
-    const data = await fetchDashboard();
-    cached = data;
-    return data.taskQueue;
-  } catch {
-    return cached?.taskQueue || { pending: 0, running: 0, completed: 0, failed: 0, items: [] };
-  }
+export function useRecentActivities(source) {
+  return () => source()?.recentActivities || [];
 }
 
-export async function getGateway() {
-  try {
-    const data = await fetchDashboard();
-    cached = data;
-    return data.gateway;
-  } catch {
-    return cached?.gateway || {};
-  }
+export function useTaskQueue(source) {
+  return () => source()?.taskQueue || { pending: 0, running: 0, completed: 0, failed: 0, items: [] };
+}
+
+export function useGateway(source) {
+  return () => source()?.gateway || {};
 }
