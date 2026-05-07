@@ -1,14 +1,12 @@
 {
-  "name": "solidjs-blog",
-  "homepage": "https://deltrivx.github.io/solidjs",
+  "name": "solidjs-monitor",
+  "homepage": "https://deltrivx.github.io/solidjs-monitor",
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "deploy": "gh-pages -d dist",
-    "build:monitor": "cd monitor && npm install && npm run build",
-    "build:all": "npm run build && npm run build:monitor"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@solidjs/meta": "^0.29.4",
