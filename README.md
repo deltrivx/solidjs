@@ -1,4 +1,4 @@
-# Kris 个人主页 (SolidJS 版)
+# DeltrivX 个人主页 (SolidJS 版)
 
 这个项目已经从传统的静态 HTML 迁移到了现代的 **SolidJS** 框架，并集成了多种炫酷的交互特效。
 
@@ -47,4 +47,4 @@ npm run serve
 ```
 
 ---
-*Made with ❤️ by KrisChan*
+*Made with ❤️ by DeltrivX*
