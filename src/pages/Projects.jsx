@@ -75,6 +75,25 @@ export default function Projects() {
                         </div>
                     </div>
                 </div>
+                {/* 项目四：三书六省监控面板 */}
+                <div class="project-card reveal tilt-card">
+                    <div class="project-preview">
+                        <div class="project-preview-bg pp-4">🏛️</div>
+                    </div>
+                    <div class="project-info">
+                        <h3>三书六省 · AI Agent 监控面板</h3>
+                        <p>三省六部 Multi-Agent 编排框架的实时监控仪表盘，展示九部 Agent 运行状态与任务指标。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">SolidJS</span>
+                            <span class="tech-tag">Vite</span>
+                            <span class="tech-tag">GitHub Pages</span>
+                        </div>
+                        <div class="project-links">
+                            <A href="https://deltrivx.github.io/solidjs-monitor" target="_blank">🔗 在线演示</A>
+                            <A href="https://github.com/deltrivx/solidjs-monitor" target="_blank">📂 GitHub</A>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     );
