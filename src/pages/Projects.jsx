@@ -89,8 +89,8 @@ export default function Projects() {
                             <span class="tech-tag">GitHub Pages</span>
                         </div>
                         <div class="project-links">
-                            <A href="https://deltrivx.github.io/solidjs-monitor" target="_blank">🔗 在线演示</A>
-                            <A href="https://github.com/deltrivx/solidjs-monitor" target="_blank">📂 GitHub</A>
+                            <A href="https://deltrivx.github.io/solidjs/monitor/" target="_blank">🔗 在线演示</A>
+                            <A href="https://github.com/deltrivx/solidjs" target="_blank">📂 GitHub</A>
                         </div>
                     </div>
                 </div>
