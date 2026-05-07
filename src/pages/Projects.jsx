@@ -33,7 +33,7 @@ export default function Projects() {
                         {/* 项目链接 */}
                         <div class="project-links">
                             <A href="#">🔗 在线演示</A>
-                            <A href="https://github.com/Chan-Kris" target="_blank" rel="noopener">📂 GitHub</A>
+                            <A href="https://github.com/deltrivx" target="_blank" rel="noopener">📂 GitHub</A>
                         </div>
                     </div>
                 </div>
@@ -52,7 +52,7 @@ export default function Projects() {
                         </div>
                         <div class="project-links">
                             <A href="#">🔗 在线演示</A>
-                            <A href="https://github.com/Chan-Kris" target="_blank" rel="noopener">📂 GitHub</A>
+                            <A href="https://github.com/deltrivx" target="_blank" rel="noopener">📂 GitHub</A>
                         </div>
                     </div>
                 </div>
@@ -71,7 +71,7 @@ export default function Projects() {
                         </div>
                         <div class="project-links">
                             <A href="#">🔗 在线演示</A>
-                            <A href="https://github.com/Chan-Kris" target="_blank" rel="noopener">📂 GitHub</A>
+                            <A href="https://github.com/deltrivx" target="_blank" rel="noopener">📂 GitHub</A>
                         </div>
                     </div>
                 </div>

@@ -42,16 +42,16 @@ export default function Contact() {
                     <p>无论是项目合作、技术交流还是随便聊聊，都欢迎联系我。</p>
                     <div class="contact-links">
                         {/* 邮箱联系方式 */}
-                        <a href="mailto:cforiky0314@gmail.com" class="contact-link-item">                            <span class="contact-link-icon">📧</span>
-                            <div class="contact-link-text"><strong>Email</strong><span>cforiky0314@gmail.com</span></div>
+                        <a href="mailto:deltrivx@users.noreply.github.com" class="contact-link-item">                            <span class="contact-link-icon">📧</span>
+                            <div class="contact-link-text"><strong>Email</strong><span>deltrivx@users.noreply.github.com</span></div>
                         </a>
-                        <a href="https://github.com/Chan-Kris" target="_blank" rel="noopener" class="contact-link-item">
+                        <a href="https://github.com/deltrivx" target="_blank" rel="noopener" class="contact-link-item">
                             <span class="contact-link-icon">🐙</span>
-                            <div class="contact-link-text"><strong>GitHub</strong><span>Chan-Kris</span></div>
+                            <div class="contact-link-text"><strong>GitHub</strong><span>deltrivx</span></div>
                         </a>
                         <a href="#" class="contact-link-item">
                             <span class="contact-link-icon">🐦</span>
-                            <div class="contact-link-text"><strong>Twitter</strong><span>@kris_dev</span></div>
+                            <div class="contact-link-text"><strong>Twitter</strong><span>@deltrivx</span></div>
                         </a>
                     </div>
                 </div>                <form class="contact-form reveal" action="https://formspree.io/f/placeholder" onSubmit={handleSubmit}>
