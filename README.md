@@ -48,3 +48,7 @@ npm run serve
 
 ---
 *Made with ❤️ by DeltrivX*
+
+## 🙏 致谢
+
+感谢原作者 [KrisChan](https://github.com/Chan-Kris) 开发的优秀 SolidJS 博客模板。本项目基于 [Kris-personal_blog](https://github.com/Chan-Kris/Kris-personal_blog) 项目进行个性化修改和部署。
