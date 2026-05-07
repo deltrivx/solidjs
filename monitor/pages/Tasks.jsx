@@ -1,4 +1,4 @@
-import { onMount, createSignal } from 'solid-js';
+import { onMount, createSignal, For, Show } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
 import { getTaskQueue, getMetrics } from '../data/mockData';
@@ -7,8 +7,8 @@ const priorityColors = { high: '#fd79a8', medium: '#fdcb6e', low: '#8888a0' };
 const statusColors = { running: '#00cec9', pending: '#8888a0', completed: '#00b894', failed: '#e17055' };
 
 export default function Tasks() {
-  const [queue, setQueue] = createSignal({ pending: 0, running: 0, completed: 0, failed: 0, items: [] });
-  const [metrics, setMetrics] = createSignal({});
+  const [queue, setQueue] = createSignal, For, Show({ pending: 0, running: 0, completed: 0, failed: 0, items: [] });
+  const [metrics, setMetrics] = createSignal, For, Show({});
 
   onMount(async () => {
     initReveal();
