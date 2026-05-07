@@ -1,22 +1,37 @@
-import { onMount, createSignal, For, Show } from 'solid-js';
+import { onMount, createSignal, onCleanup } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt, initSpotlight } from '../utils/animations';
-import { getTaskQueue, getMetrics } from '../data/mockData';
+
+const API_URL = '/solidjs/monitor/api/data.json';
 
 const priorityColors = { high: '#fd79a8', medium: '#fdcb6e', low: '#8888a0' };
 const statusColors = { running: '#00cec9', pending: '#8888a0', completed: '#00b894', failed: '#e17055' };
 
 export default function Tasks() {
-  const [queue, setQueue] = createSignal, For, Show({ pending: 0, running: 0, completed: 0, failed: 0, items: [] });
-  const [metrics, setMetrics] = createSignal, For, Show({});
+  const [queue, setQueue] = createSignal({ pending: 0, running: 0, completed: 0, failed: 0, items: [] });
 
-  onMount(async () => {
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL + '?_=' + Date.now());
+      if (res.ok) {
+        const json = await res.json();
+        setQueue(json.taskQueue || { pending: 0, running: 0, completed: 0, failed: 0, items: [] });
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  onMount(() => {
     initReveal();
     initTilt();
     initSpotlight();
-    setQueue(await getTaskQueue());
-    setMetrics(await getMetrics());
+    loadData();
+    const timer = setInterval(loadData, 30000);
+    onCleanup(() => clearInterval(timer));
   });
+
+  const q = () => queue();
 
   return (
     <>
@@ -34,26 +49,26 @@ export default function Tasks() {
 
         <div class="task-stats-grid reveal">
           <div class="task-stat-card" style="border-color:#fdcb6e;">
-            <div class="task-stat-value">{queue().pending}</div>
+            <div class="task-stat-value">{q().pending}</div>
             <div class="task-stat-label">待处理</div>
           </div>
           <div class="task-stat-card" style="border-color:#00cec9;">
-            <div class="task-stat-value">{queue().running}</div>
+            <div class="task-stat-value">{q().running}</div>
             <div class="task-stat-label">执行中</div>
           </div>
           <div class="task-stat-card" style="border-color:#00b894;">
-            <div class="task-stat-value">{queue().completed}</div>
+            <div class="task-stat-value">{q().completed}</div>
             <div class="task-stat-label">已完成</div>
           </div>
           <div class="task-stat-card" style="border-color:#e17055;">
-            <div class="task-stat-value">{queue().failed}</div>
+            <div class="task-stat-value">{q().failed}</div>
             <div class="task-stat-label">失败</div>
           </div>
         </div>
 
         <div class="task-list reveal">
           <h3 style="margin-bottom:1rem;">当前任务</h3>
-          <For each={queue().items}>
+          <For each={q().items}>
             {(task) => (
               <div class="task-item">
                 <div class="task-item-left">
@@ -72,7 +87,7 @@ export default function Tasks() {
               </div>
             )}
           </For>
-          <Show when={queue().items.length === 0}>
+          <Show when={q().items.length === 0}>
             <p style="text-align:center;color:var(--text-secondary);padding:2rem;">
               暂无待处理任务，一切正常 🎉
             </p>
