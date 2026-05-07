@@ -19,11 +19,11 @@ export default function Navbar() {
 
   return (
     <nav ref={navRef}>
-      <A href="/solidjs-monitor" class="logo">🏛️ 三书六省</A>
+      <A href="/solidjs/monitor" class="logo">🏛️ 三书六省</A>
       <ul class="nav-links">
-        <li><A href="/solidjs-monitor">总览</A></li>
-        <li><A href="/solidjs-monitor/agents">Agent</A></li>
-        <li><A href="/solidjs-monitor/tasks">任务</A></li>
+        <li><A href="/solidjs/monitor">总览</A></li>
+        <li><A href="/solidjs/monitor/agents">Agent</A></li>
+        <li><A href="/solidjs/monitor/tasks">任务</A></li>
       </ul>
     </nav>
   );
