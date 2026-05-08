@@ -25,6 +25,14 @@ export default function Dashboard() {
   }
 
   onMount(() => {
+    // 时间显示优化
+    const updateTime = () => {
+      const timeEl = document.getElementById("current-time");
+      if (timeEl) timeEl.textContent = new Date().toLocaleString("zh-CN");
+    };
+    updateTime();
+    const timeInterval = setInterval(updateTime, 1000);
+    onCleanup(() => clearInterval(timeInterval));
     initReveal();
     initTilt();
     initSpotlight();
