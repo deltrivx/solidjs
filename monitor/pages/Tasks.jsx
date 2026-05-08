@@ -31,7 +31,24 @@ export default function Tasks() {
     onCleanup(() => clearInterval(timer));
   });
 
-  const q = () => queue();
+  const q = () => {
+  const queueData = queue();
+  const items = queueData.items || [];
+  
+  // 以下方出现次数统计任务数
+  const counts = { pending: 0, running: 0, completed: 0, failed: 0 };
+  items.forEach(item => {
+    if (item.status && counts.hasOwnProperty(item.status)) {
+      counts[item.status]++;
+    }
+  });
+  
+  return {
+    ...queueData,
+    ...counts,
+    items: items
+  };
+};
 
   return (
     <>
