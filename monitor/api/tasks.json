@@ -1,0 +1,111 @@
+{
+  "timestamp": "2026-05-08T08:48:00+08:00",
+  "agents": {
+    "taizi": {
+      "name": "东宫太子",
+      "tasks": {
+        "pending": 0,
+        "running": 1,
+        "completed": 15,
+        "failed": 0
+      },
+      "load": "low"
+    },
+    "zhongshusheng": {
+      "name": "中书省",
+      "tasks": {
+        "pending": 2,
+        "running": 1,
+        "completed": 28,
+        "failed": 1
+      },
+      "load": "medium"
+    },
+    "menxiasheng": {
+      "name": "门下省",
+      "tasks": {
+        "pending": 1,
+        "running": 0,
+        "completed": 12,
+        "failed": 0
+      },
+      "load": "low"
+    },
+    "shangshusheng": {
+      "name": "尚书省",
+      "tasks": {
+        "pending": 3,
+        "running": 2,
+        "completed": 22,
+        "failed": 0
+      },
+      "load": "high"
+    },
+    "libu": {
+      "name": "吏部",
+      "tasks": {
+        "pending": 1,
+        "running": 1,
+        "completed": 8,
+        "failed": 0
+      },
+      "load": "medium"
+    },
+    "hubu": {
+      "name": "户部",
+      "tasks": {
+        "pending": 0,
+        "running": 1,
+        "completed": 6,
+        "failed": 0
+      },
+      "load": "low"
+    },
+    "libu_li": {
+      "name": "礼部",
+      "tasks": {
+        "pending": 1,
+        "running": 0,
+        "completed": 5,
+        "failed": 0
+      },
+      "load": "low"
+    },
+    "bingbu": {
+      "name": "兵部",
+      "tasks": {
+        "pending": 0,
+        "running": 1,
+        "completed": 4,
+        "failed": 0
+      },
+      "load": "low"
+    },
+    "xingbu": {
+      "name": "刑部",
+      "tasks": {
+        "pending": 1,
+        "running": 0,
+        "completed": 3,
+        "failed": 0
+      },
+      "load": "low"
+    },
+    "gongbu": {
+      "name": "工部",
+      "tasks": {
+        "pending": 2,
+        "running": 1,
+        "completed": 7,
+        "failed": 0
+      },
+      "load": "medium"
+    }
+  },
+  "total": {
+    "pending": 11,
+    "running": 8,
+    "completed": 110,
+    "failed": 1
+  }
+}
