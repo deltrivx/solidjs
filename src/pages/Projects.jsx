@@ -6,7 +6,7 @@ export default function Projects() {
     { icon: "📺", title: "dongguaTV", desc: "Fork — TV 相关项目", tags: ["Fork","TV"], color: "linear-gradient(135deg,#fd79a8,#fab1a0)", link: "https://github.com/deltrivx/dongguaTV", external: "" },
     { icon: "🎥", title: "KVideo", desc: "基于 Next.js 16 构建的视频聚合播放平台 — Liquid Glass 设计", tags: ["Next.js","React","Video"], color: "linear-gradient(135deg,#ffa502,#ff6348)", link: "https://github.com/deltrivx/KVideo", external: "" },
     { icon: "⚡", title: "Quantumult X", desc: "自用脚本整合", tags: ["JavaScript","Shell"], color: "linear-gradient(135deg,#2ed573,#7bed9f)", link: "https://github.com/deltrivx/Quantumult-X", external: "" },
-    { icon: "🪟", title: "宝塔面板", desc: "服务器管理面板 — baota.deltrivx.com", tags: ["Linux","运维"], color: "linear-gradient(135deg,#45aaf2,#2bcbba)", link: "https://baota.deltrivx.com/btpanel", external: "https://baota.deltrivx.com/btpanel" },
+    { icon: "🪟", title: "宝塔面板", desc: "服务器管理面板 — baota.deltrivx.com", tags: ["Linux","运维"], color: "linear-gradient(135deg,#45aaf2,#2bcbba)", link: "https://www.bt.cn", external: "https://baota.deltrivx.com/btpanel" },
   ];
   return (
     <section id="projects">
