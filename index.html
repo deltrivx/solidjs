@@ -2,34 +2,11 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DeltrivX</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    body { background: #0a0e17; color: #c8d6e5; font-family: 'JetBrains Mono', monospace; }
-    #fallback {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      flex-direction: column;
-      text-align: center;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: #0a0e17;
-      z-index: 9999;
-    }
-    #fallback h1 { color: #ff2d78; text-shadow: 0 0 20px #ff2d78; font-size: 2.5rem; }
-    #fallback p { color: #00d4ff; margin-top: 1rem; }
-  </style>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>DeltrivX | 个人主页</title>
+  <script>const r=sessionStorage.getItem("redirect");r&&r!=="/"&&(sessionStorage.removeItem("redirect"),history.replaceState(null,"",r))</script>
+  <style>body{background:#0a0a0f;color:#e8e8f0;font-family:"Segoe UI",system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;flex-direction:column;text-align:center}#fb p{color:#6c5ce7}</style>
+  <script>document.write('<link rel="stylesheet" href="/src/index.jsx">'.replace("/src/index.jsx","/src/App.css"))</script>
 </head>
-<body>
-  <div id="fallback">
-    <h1>DELTRIVX</h1>
-    <p>// 正在加载赛博空间...</p>
-  </div>
-  <div id="root"></div>
-  <script type="module" src="/src/index.jsx"></script>
-</body>
+<body><div id="fb" style="position:fixed;z-index:9999;background:#0a0a0f;width:100%;height:100%;display:flex;justify-content:center;align-items:center;flex-direction:column;"><h1 style="background:linear-gradient(135deg,#6c5ce7,#00cec9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">DeltrivX</h1><p>加载中...</p></div><div id="root"></div><script type="module" src="/src/index.jsx"></script></body>
 </html>
