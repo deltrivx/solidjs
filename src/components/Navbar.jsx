@@ -8,9 +8,9 @@ export default function Navbar() {
         <div class="nav-links">
           <A href="/">HOME</A>
           <A href="/blog">BLOG</A>
+          <A href="/about">ABOUT</A>
         </div>
       </div>
     </nav>
   );
 }
-
