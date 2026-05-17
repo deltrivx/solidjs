@@ -1,14 +1,19 @@
-import { A } from "@solidjs/router";
-
 export default function Navbar() {
+  const linkStyle = {
+    color: "#64748b",
+    textDecoration: "none",
+    fontSize: "0.9rem",
+    transition: "all 0.3s",
+  };
+
   return (
     <nav class="navbar">
       <div class="container">
-        <A href="/" class="logo">[DELTRIVX]</A>
+        <a href="/" class="logo">[DELTRIVX]</a>
         <div class="nav-links">
-          <A href="/">HOME</A>
-          <A href="/blog">BLOG</A>
-          <A href="/about">ABOUT</A>
+          <a href="/">HOME</a>
+          <a href="/blog">BLOG</a>
+          <a href="/about">ABOUT</a>
         </div>
       </div>
     </nav>
