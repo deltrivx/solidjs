@@ -10,9 +10,9 @@
     p { color: #00d4ff; margin-top: 1rem; }
   </style>
   <script>
-    sessionStorage.redirect = location.pathname + location.search + location.hash;
+    sessionStorage.setItem("redirect", location.pathname + location.search + location.hash);
+    location.replace("/");
   </script>
-  <meta http-equiv="refresh" content="0;URL='/'" />
 </head>
 <body>
   <h1>DELTRIVX</h1>
