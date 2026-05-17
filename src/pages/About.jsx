@@ -1,32 +1,27 @@
-import { A } from "@solidjs/router";
-
 export default function About() {
   return (
-    <div>
-      <div class="post-header">
-        <h1>关于我</h1>
-        <div class="meta">// SYSTEM_PROFILE.deltrivx</div>
+    <section id="about">
+      <div class="section-header reveal">
+        <h2><span class="gradient-text">关于我</span></h2>
+        <p>了解我的背景和经历</p>
       </div>
-      <div class="post-content">
-        <section style="margin-bottom:2rem;">
-          <h2>DeltrivX</h2>
-          <p>代码与文字的赛博旅人。热衷前端、云原生与自动化。</p>
-        </section>
-        <section style="margin-bottom:2rem;">
-          <h2>技能</h2>
-          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem;">
-            {["SolidJS","React","Vue","Node.js","Python","Docker","K8s","Cloudflare","GitHub Actions","Linux"].map(s => (
-              <span class="tag">#{s}</span>
-            ))}
+      <div class="about-content" style="max-width:700px;margin:auto;">
+        <h3 style="font-size:1.6rem;margin-bottom:1rem;">DeltrivX</h3>
+        <p style="color:var(--text-secondary);margin-bottom:1rem;line-height:1.8;">
+          全栈开发者，云原生爱好者。热衷于构建现代化的 Web 应用，探索 AI 与自动化的无限可能。
+        </p>
+        <div class="stats-row" style="display:flex;gap:2rem;margin-top:2rem;justify-content:center;">
+          <div class="stat-item" style="text-align:center;">
+            <div class="stat-number" style="font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">3+</div>
+            <div class="stat-label" style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">年经验</div>
           </div>
-        </section>
-        <section>
-          <h2>联系</h2>
-          <p>GitHub: <A href="https://github.com/deltrivx" target="_blank">github.com/deltrivx</A></p>
-          <p>Blog: <A href="https://www.deltrivx.com" target="_blank">www.deltrivx.com</A></p>
-        </section>
+          <div class="stat-item" style="text-align:center;">
+            <div class="stat-number" style="font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">10+</div>
+            <div class="stat-label" style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">项目</div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
