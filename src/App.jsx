@@ -14,18 +14,17 @@ export default function App() {
   return (
     <div class="app">
       <Particles />
-      <Router>
-        <Navbar />
-        <main>
+      <Navbar />
+      <main>
+        <Router>
           <Route path="/" component={Home} />
           <Route path="/about" component={About} />
           <Route path="/skills" component={Skills} />
           <Route path="/projects" component={Projects} />
           <Route path="/contact" component={Contact} />
-        </main>
-        <Footer />
-      </Router>
+        </Router>
+      </main>
+      <Footer />
     </div>
   );
 }
-
