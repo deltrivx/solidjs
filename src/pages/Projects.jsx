@@ -1,9 +1,9 @@
 import { A } from "@solidjs/router";
 export default function Projects() {
   const projects = [
-    { num: "01", icon: "📝", title: "DeltrivX Blog", desc: "赛博朋克风格个人博客，SolidJS + Vite + GitHub Pages", tags: ["SolidJS","Vite","Cloudflare"], link: "https://github.com/deltrivx/solidjs" },
-    { num: "02", icon: "🎬", title: "MoonTVPlus", desc: "现代化视频聚合播放平台", tags: ["Next.js","React","Node.js"], link: "https://github.com/deltrivx/moontvplus" },
-    { num: "03", icon: "🎮", title: "Quantumult X", desc: "自用的脚本整合", tags: ["JavaScript","Shell"], link: "https://github.com/deltrivx/Quantumult-X" },
+    { icon: "📝", title: "DeltrivX Blog", desc: "赛博朋克风格个人博客，SolidJS + Vite + GitHub Pages", tags: ["SolidJS","Vite","Cloudflare"], color: "linear-gradient(135deg,#6c5ce7,#a29bfe)", link: "https://github.com/deltrivx/solidjs" },
+    { icon: "🎬", title: "MoonTVPlus", desc: "现代化视频聚合播放平台", tags: ["Next.js","React","Node.js"], color: "linear-gradient(135deg,#00cec9,#81ecec)", link: "https://github.com/deltrivx/moontvplus" },
+    { icon: "⚡", title: "Quantumult X", desc: "自用脚本整合", tags: ["JavaScript","Shell"], color: "linear-gradient(135deg,#fd79a8,#fab1a0)", link: "https://github.com/deltrivx/Quantumult-X" },
   ];
   return (
     <section id="projects">
@@ -15,7 +15,7 @@ export default function Projects() {
         {projects.map(p => (
           <div class="project-card reveal">
             <div class="project-preview">
-              <div class="project-preview-bg pp-{p.num}" style="background:linear-gradient(135deg,var(--accent-1),var(--accent-2));width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:4rem;">{p.icon}</div>
+              <div class="project-preview-bg" style={`background:${p.color};width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:4rem;`}>{p.icon}</div>
             </div>
             <div class="project-info">
               <h3>{p.title}</h3>
@@ -29,4 +29,3 @@ export default function Projects() {
     </section>
   );
 }
-
