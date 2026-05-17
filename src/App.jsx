@@ -15,17 +15,17 @@ export default function App() {
     <div class="app">
       <Particles />
       <div class="scanlines"></div>
-      <Navbar />
-      <main class="container" style="position: relative; z-index: 1;">
-        <Router>
+      <Router>
+        <Navbar />
+        <main class="container" style="position: relative; z-index: 1;">
           <Route path="/" component={Home} />
           <Route path="/blog" component={Blog} />
           <Route path="/post/:slug" component={Post} />
           <Route path="/about" component={About} />
           <Route path="*" component={NotFound} />
-        </Router>
-      </main>
-      <Footer />
+        </main>
+        <Footer />
+      </Router>
     </div>
   );
 }
