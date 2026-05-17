@@ -6,27 +6,26 @@ export default function Home() {
   return (
     <div>
       <section class="hero">
-        <h1 class="glitch" data-text="DELTRIVX">DELTRIVX</h1>
-        <div class="neo-divider"></div>
-        <p>// 赛博空间中的文字碎片 //</p>
+        <div class="hero-content">
+          <h1><span class="gradient-text">DELTRIVX</span></h1>
+          <p class="subtitle">赛博空间中的文字碎片</p>
+          <div class="hero-buttons">
+            <A href="/blog" class="btn btn-primary">📝 阅读博客</A>
+            <A href="/about" class="btn btn-outline" style="background:transparent;color:var(--text-primary);border:1px solid var(--glass-border);padding:0.85rem 2rem;border-radius:12px;font-weight:600;text-decoration:none;transition:all 0.3s;">ℹ️ 关于我</A>
+          </div>
+        </div>
       </section>
 
       <section>
-        <h2 style="color: var(--neon-blue); font-size: 1rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 2px;">
-          ▸ 最新文章
-        </h2>
+        <h2 class="page-title">▸ 最新文章</h2>
         <div class="post-list">
           {posts.map((post) => (
             <A href={`/post/${post.slug}`} class="post-card">
-              <div class="date">[ {post.date} ]</div>
+              <div class="date">{post.date}</div>
               <h3>{post.title}</h3>
-              <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.3rem;">
-                {post.excerpt}
-              </p>
+              <p class="excerpt">{post.excerpt}</p>
               <div class="tags">
-                {post.tags.map((tag) => (
-                  <span class="tag">#{tag}</span>
-                ))}
+                {post.tags.map((tag) => <span class="tag">#{tag}</span>)}
               </div>
             </A>
           ))}
