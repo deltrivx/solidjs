@@ -1,6 +1,7 @@
 import { createContext, useContext, createSignal } from 'solid-js';
 
-const AUTH_HASH = "ba5f920b7136c1cd3101518a952c085a4e2313e4800d628c86b630f142808039";
+const USER_HASH = "4bc8c4f28c625fca2004a5f486c31aa4f161dc9f3c0c6b2c9237db12f55ac442";
+const PASS_HASH = "ba5f920b7136c1cd3101518a952c085a4e2313e4800d628c86b630f142808039";
 
 async function sha256(str) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -18,8 +19,9 @@ export function AuthProvider(props) {
     );
 
     const login = async (user, password) => {
-        const hash = await sha256(password);
-        if (hash === AUTH_HASH) {
+        const userHash = await sha256(user);
+        const passHash = await sha256(password);
+        if (userHash === USER_HASH && passHash === PASS_HASH) {
             localStorage.setItem("auth_logged_in", "true");
             localStorage.setItem("auth_username", user);
             setIsLoggedIn(true);
