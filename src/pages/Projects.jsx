@@ -24,6 +24,14 @@ export default function Projects() {
             tech: ["面板", "运维"],
             links: [{ url: "https://baota.deltrivx.com/btpanel", label: "🌐 公网" }, { url: "http://192.168.31.5:19190/btpanel", label: "🔗 内网" }],
         },
+        {
+            icon: "🏠",
+            name: "HomeAssistant",
+            desc: "智能家居控制系统，集成灯光、传感器、自动化场景等设备。",
+            tech: ["IoT", "智能家居"],
+            links: [{ url: "http://192.168.31.3:8123", label: "🔗 内网" }],
+        },
+
 
             icon: "🐻",
             name: "Aria2",
