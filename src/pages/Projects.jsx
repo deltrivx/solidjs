@@ -31,6 +31,13 @@ export default function Projects() {
         },
 
         {
+        {
+            icon: "🌐",
+            name: "Chromium",
+            desc: "远程 Chromium 浏览器实例，支持自动化脚本和 Web 测试。",
+            tech: ["Chromium", "浏览器"],
+            links: [{ url: "https://chromium.deltrivx.com", label: "🌐 公网" }],
+        },
             icon: "🐻",
             name: "Aria2",
             desc: "轻量级命令行下载工具，支持 HTTP/HTTPS/BT/Metalink 协议，搭配 AriaNg WebUI 管理。",
@@ -57,7 +64,7 @@ export default function Projects() {
             name: "Emby 影音中心",
             desc: "全平台媒体管理与串流服务器，整合影视资源库。",
             tech: ["Emby Server", "NAS"],
-            links: [{ url: "http://192.168.31.2:8096", label: "🎞️ Emby" }],
+            links: [{ url: "https://emby.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8096", label: "🔗 内网" }],
         },
         {
             icon: "🎯",
