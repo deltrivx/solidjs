@@ -4,10 +4,7 @@ import { MetaProvider, Title, Meta } from '@solidjs/meta';
 import App from './App';
 import Home from './pages/Home';
 import About from './pages/About';
-import Skills from './pages/Skills';
 import Projects from './pages/Projects';
-import Contact from './pages/Contact';
-import NotFound from './pages/NotFound';
 import './css/style.css'; // 引入全局样式
 
 render(
@@ -41,11 +38,7 @@ render(
             <Contact />
           </>
         )} />
-        <Route path="*paramName" component={() => (
-          <>
-            <Title>404 - 页面未找到</Title>
-            <NotFound />
-          </>
+</>
         )} />
       </HashRouter>
     </MetaProvider>
