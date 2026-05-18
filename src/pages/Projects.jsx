@@ -9,7 +9,7 @@ export default function Projects() {
 
     const projects = [
         {
-            icon: "🐄",
+            icon: "🐮",
             name: "飞牛系统",
             desc: "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
             tech: ["FnOS", "NAS"],
