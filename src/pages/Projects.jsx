@@ -9,6 +9,14 @@ export default function Projects() {
 
     const projects = [
         {
+            icon: "🐂",
+            name: "飞牛系统",
+            desc: "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
+            tech: ["FnOS", "NAS"],
+            links: [{ url: "http://192.168.31.2:5080", label: "🔗 内网" }, { url: "https://fnos.deltrivx.com", label: "🌐 外网" }],
+        },
+
+        {
             icon: "🪟",
             name: "宝塔面板",
             desc: "服务器运维管理面板，可视化网站、数据库、FTP 管理。",
