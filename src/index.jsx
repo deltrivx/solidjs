@@ -7,6 +7,7 @@ import About from './pages/About';
 import Skills from './pages/Skills';
 import Projects from './pages/Projects';
 import Contact from './pages/Contact';
+import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import './css/style.css'; // 引入全局样式
 
@@ -47,6 +48,12 @@ render(
             <Title>Kris | 联系我</Title>
             <Meta name="description" content="与 Kris 取得联系" />
             <Contact />
+          </>
+        )} />
+        <Route path="/login" component={() => (
+          <>
+            <Title>Kris | 登录</Title>
+            <Login />
           </>
         )} />
         <Route path="*paramName" component={() => (
