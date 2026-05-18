@@ -106,6 +106,55 @@ export default function Projects() {
             tech: ["阅读", "知识管理"],
             links: [{ url: "http://192.168.31.2:3750", label: "📖 Byte-Muse" }],
         },
+        {
+            icon: "🗄️",
+            name: "PostgreSQL 数据库",
+            desc: "PostgreSQL 17 关系型数据库，为各服务提供可靠的数据存储。",
+            tech: ["PostgreSQL", "数据库"],
+            links: [{ url: "http://192.168.31.2:5433", label: "🗄️ PostgreSQL" }],
+        },
+        {
+            icon: "📦",
+            name: "Redis 缓存",
+            desc: "高性能内存缓存数据库，加速服务响应。",
+            tech: ["Redis", "缓存"],
+            links: [{ url: "http://192.168.31.2:6379", label: "⚡ Redis" }],
+        },
+        {
+            icon: "🔗",
+            name: "OmniBox 综合工具",
+            desc: "多功能集成工具箱。",
+            tech: ["工具", "集成"],
+            links: [{ url: "http://192.168.31.2:7023", label: "🔗 OmniBox" }],
+        },
+        {
+            icon: "📺",
+            name: "MDC 媒体下载中心",
+            desc: "多平台媒体资源下载与聚合中心。",
+            tech: ["媒体", "下载"],
+            links: [{ url: "http://192.168.31.2:9208", label: "📺 MDC" }],
+        },
+        {
+            icon: "🎥",
+            name: "咪咕视频助手",
+            desc: "咪咕视频资源抓取与下载工具。",
+            tech: ["视频", "抓取"],
+            links: [{ url: "http://192.168.31.2:1234", label: "🎥 Migu Video" }],
+        },
+        {
+            icon: "🔐",
+            name: "AllInSSL 证书管理",
+            desc: "SSL 证书全生命周期管理工具。",
+            tech: ["SSL", "证书"],
+            links: [{ url: "http://192.168.31.2:8888", label: "🔐 AllInSSL" }],
+        },
+        {
+            icon: "🌐",
+            name: "Nginx 反向代理",
+            desc: "Web 服务反向代理与负载均衡网关。",
+            tech: ["Nginx", "代理"],
+            links: [{ url: "http://192.168.31.2:80", label: "🌐 Nginx" }],
+        },
     ];
 
     return (
