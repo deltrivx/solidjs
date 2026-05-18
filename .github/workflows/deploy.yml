@@ -24,13 +24,15 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to main/docs
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ github.token }}
-          publish_dir: ./docs
-          destination_dir: docs
-          publish_branch: main
-          keep_files: false
-          force_orphan: false
+      - name: Commit built docs/ to main branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update built docs [skip ci]"
+            git push
+          fi
 
