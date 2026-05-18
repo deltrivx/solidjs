@@ -146,7 +146,7 @@ export default function Projects() {
             name: "AllInSSL 证书管理",
             desc: "SSL 证书全生命周期管理工具。",
             tech: ["SSL", "证书"],
-            links: [{ url: "http://192.168.31.2:8888", label: "🔐 AllInSSL" }],
+            links: [{ url: "http://192.168.31.2:8888/allinssl", label: "🔐 AllInSSL" }],
         },
         {
             icon: "🌐",
