@@ -13,7 +13,7 @@ export default function Projects() {
             name: "Aria2",
             desc: "轻量级命令行下载工具，支持 HTTP/HTTPS/BT/Metalink 协议，搭配 AriaNg WebUI 管理。",
             tech: ["aria2", "下载"],
-            links: [{ url: "http://192.168.31.2:6880", label: "🎛️ AriaNg" }, { url: "http://192.168.31.2:6800", label: "🔌 RPC" }],
+            links: [{ url: "http://192.168.31.2:6880", label: "🎛️ WebUI" }],
         },
         {
             icon: "⚡",
