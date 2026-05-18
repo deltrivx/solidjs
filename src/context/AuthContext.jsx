@@ -1,6 +1,5 @@
 import { createContext, useContext, createSignal } from 'solid-js';
 
-// 陛下预设密码 txws=1314 的 SHA256 哈希
 const AUTH_HASH = "ba5f920b7136c1cd3101518a952c085a4e2313e4800d628c86b630f142808039";
 
 async function sha256(str) {
@@ -14,12 +13,17 @@ export function AuthProvider(props) {
     const [isLoggedIn, setIsLoggedIn] = createSignal(
         localStorage.getItem("auth_logged_in") === "true"
     );
+    const [username, setUsername] = createSignal(
+        localStorage.getItem("auth_username") || ""
+    );
 
-    const login = async (password) => {
+    const login = async (user, password) => {
         const hash = await sha256(password);
         if (hash === AUTH_HASH) {
             localStorage.setItem("auth_logged_in", "true");
+            localStorage.setItem("auth_username", user);
             setIsLoggedIn(true);
+            setUsername(user);
             return true;
         }
         return false;
@@ -27,11 +31,13 @@ export function AuthProvider(props) {
 
     const logout = () => {
         localStorage.removeItem("auth_logged_in");
+        localStorage.removeItem("auth_username");
         setIsLoggedIn(false);
+        setUsername("");
     };
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{ isLoggedIn, username, login, logout }}>
             {props.children}
         </AuthContext.Provider>
     );
