@@ -31,8 +31,6 @@ export default function Projects() {
         },
 
         {
-        },
-        {
             icon: "🎬",
             name: "Emby 影音中心",
             desc: "全平台媒体管理与串流服务器，整合影视资源库。",
@@ -122,8 +120,6 @@ export default function Projects() {
             desc: "个人知识管理与阅读平台。",
             tech: ["阅读", "知识管理"],
             links: [{ url: "http://192.168.31.2:3750", label: "📖 Byte-Muse" }],
-        },
-        {
         },
         {
         {
