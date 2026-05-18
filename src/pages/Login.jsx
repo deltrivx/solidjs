@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from '@solidjs/router';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
+    const [username, setUsername] = createSignal('');
     const [password, setPassword] = createSignal('');
     const [remember, setRemember] = createSignal(false);
     const [error, setError] = createSignal('');
@@ -13,12 +14,13 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
-        const ok = await login(password());
+        if (!username().trim()) { setError('请输入用户名'); return; }
+        const ok = await login(username(), password());
         if (ok) {
             const redirect = searchParams.redirect || '/';
             navigate(redirect, { replace: true });
         } else {
-            setError('密码错误，请重试');
+            setError('用户名或密码错误，请重试');
         }
     };
 
@@ -26,6 +28,11 @@ export default function Login() {
         <div style="max-width: 400px; margin: 100px auto; padding: 40px 20px;">
             <h1 style="text-align: center; margin-bottom: 30px;">登录</h1>
             <form onSubmit={handleLogin}>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 6px;">用户名</label>
+                    <input type="text" value={username()} onInput={(e) => setUsername(e.target.value)}
+                        style="width: 100%; padding: 10px; background: #1a1a2e; border: 1px solid #333; color: #fff; border-radius: 6px;" />
+                </div>
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 6px;">密码</label>
                     <input type="password" value={password()} onInput={(e) => setPassword(e.target.value)}
