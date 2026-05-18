@@ -9,6 +9,21 @@ export default function Projects() {
 
     const projects = [
         {
+            icon: "🪟",
+            name: "宝塔面板",
+            desc: "服务器运维管理面板，可视化网站、数据库、FTP 管理。",
+            tech: ["面板", "运维"],
+            links: [{ url: "http://192.168.31.5:19190/btpanel", label: "🔗 内网" }, { url: "https://baota.deltrivx.com/btpanel", label: "🌐 外网" }],
+        },
+        {
+            icon: "🐮",
+            name: "飞牛系统",
+            desc: "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
+            tech: ["FnOS", "NAS"],
+            links: [{ url: "http://192.168.31.2:5080", label: "🔗 内网" }, { url: "https://fnos.deltrivx.com", label: "🌐 外网" }],
+        },
+
+        {
             icon: "🐻",
             name: "Aria2",
             desc: "轻量级命令行下载工具，支持 HTTP/HTTPS/BT/Metalink 协议，搭配 AriaNg WebUI 管理。",
