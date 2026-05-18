@@ -48,7 +48,7 @@ export default function Contact() {
                             <div class="contact-link-text"><strong>GitHub</strong><span>DeltrivX</span></div>
                         </a>
                         <a href="https://x.com/deltrivx" target="_blank" rel="noopener" class="contact-link-item">
-                            <span class="contact-link-icon">𝕏</span>
+                            <span class="contact-link-icon">🐦</span>
                             <div class="contact-link-text"><strong>X</strong><span>@deltrivx</span></div>
                         </a>
                     </div>
