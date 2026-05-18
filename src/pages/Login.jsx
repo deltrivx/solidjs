@@ -1,6 +1,15 @@
 import { createSignal } from 'solid-js';
-import { useNavigate, useSearchParams } from '@solidjs/router';
+import { useNavigate } from '@solidjs/router';
 import { useAuth } from '../context/AuthContext';
+
+function getRedirectParam() {
+    if (typeof window === 'undefined') return '/';
+    const hash = window.location.hash;
+    const idx = hash.indexOf('?');
+    if (idx === -1) return '/';
+    const params = new URLSearchParams(hash.slice(idx + 1));
+    return params.get('redirect') || '/';
+}
 
 export default function Login() {
     const [username, setUsername] = createSignal('DeltrivX');
@@ -8,7 +17,6 @@ export default function Login() {
     const [remember, setRemember] = createSignal(false);
     const [error, setError] = createSignal('');
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const { login } = useAuth();
 
     const handleLogin = async (e) => {
@@ -17,7 +25,7 @@ export default function Login() {
         if (!username().trim()) { setError('请输入用户名'); return; }
         const ok = await login(username(), password());
         if (ok) {
-            const redirect = searchParams.redirect || '/';
+            const redirect = getRedirectParam();
             navigate(redirect, { replace: true });
         } else {
             setError('用户名或密码错误，请重试');
