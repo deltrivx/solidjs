@@ -31,7 +31,6 @@ export default function Projects() {
         },
 
         {
-        {
             icon: "🌐",
             name: "Chromium",
             desc: "远程 Chromium 浏览器实例，支持自动化脚本和 Web 测试。",
