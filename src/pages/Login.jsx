@@ -1,16 +1,25 @@
 import { createSignal } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, useSearchParams } from '@solidjs/router';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-    const [username, setUsername] = createSignal('');
     const [password, setPassword] = createSignal('');
     const [remember, setRemember] = createSignal(false);
+    const [error, setError] = createSignal('');
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { login } = useAuth();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // 预览阶段，登录成功后跳转回首页
-        navigate('/');
+        setError('');
+        const ok = await login(password());
+        if (ok) {
+            const redirect = searchParams.redirect || '/';
+            navigate(redirect, { replace: true });
+        } else {
+            setError('密码错误，请重试');
+        }
     };
 
     return (
@@ -18,15 +27,11 @@ export default function Login() {
             <h1 style="text-align: center; margin-bottom: 30px;">登录</h1>
             <form onSubmit={handleLogin}>
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 6px;">用户名</label>
-                    <input type="text" value={username()} onInput={(e) => setUsername(e.target.value)}
-                        style="width: 100%; padding: 10px; background: #1a1a2e; border: 1px solid #333; color: #fff; border-radius: 6px;" />
-                </div>
-                <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 6px;">密码</label>
                     <input type="password" value={password()} onInput={(e) => setPassword(e.target.value)}
                         style="width: 100%; padding: 10px; background: #1a1a2e; border: 1px solid #333; color: #fff; border-radius: 6px;" />
                 </div>
+                {error() && <p style="color: #ff4444; margin-bottom: 15px;">{error()}</p>}
                 <div style="margin-bottom: 20px;">
                     <label><input type="checkbox" checked={remember()} onChange={(e) => setRemember(e.target.checked)} /> 记住我</label>
                 </div>
