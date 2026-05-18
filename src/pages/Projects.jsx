@@ -13,14 +13,14 @@ export default function Projects() {
             name: "宝塔面板",
             desc: "服务器运维管理面板，可视化网站、数据库、FTP 管理。",
             tech: ["面板", "运维"],
-            links: [{ url: "http://192.168.31.5:19190/btpanel", label: "🔗 内网" }, { url: "https://baota.deltrivx.com/btpanel", label: "🌐 外网" }],
+            links: [{ url: "https://baota.deltrivx.com/btpanel", label: "🌐 外网" }, { url: "http://192.168.31.5:19190/btpanel", label: "🔗 内网" }],
         },
         {
             icon: "🐮",
             name: "飞牛系统",
             desc: "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
             tech: ["FnOS", "NAS"],
-            links: [{ url: "http://192.168.31.2:5080", label: "🔗 内网" }, { url: "https://fnos.deltrivx.com", label: "🌐 外网" }],
+            links: [{ url: "https://fnos.deltrivx.com", label: "🌐 外网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
         },
 
         {
