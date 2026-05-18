@@ -143,10 +143,6 @@ export default function Projects() {
         },
         {
             icon: "🤖",
-            name: "OpenClaw AI",
-            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
-            tech: ["AI Agent", "LLM"],
-            links: [{ url: "http://192.168.31.5:18789", label: "🔗 内网" }],
         },
         {
             icon: "☁️",
