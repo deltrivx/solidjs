@@ -9,11 +9,6 @@ export default function Projects() {
 
     const projects = [
         {
-            icon: "🗄️",
-            name: "Cloud Storage",
-            desc: "基于 aria2 + qBittorrent + Transmission 的下载中心，支持各类协议。",
-            tech: ["aria2", "qBittorrent", "Transmission"],
-            links: [{ url: "http://192.168.31.2:6880", label: "🐻 Aria2" },  { url: "http://192.168.31.2:8080", label: "⚡ qBittorrent" }, { url: "http://192.168.31.2:9091", label: "📡 Transmission" }],
         },
         {
             icon: "🎬",
@@ -107,11 +102,6 @@ export default function Projects() {
             links: [{ url: "http://192.168.31.2:3750", label: "📖 Byte-Muse" }],
         },
         {
-            icon: "🗄️",
-            name: "PostgreSQL 数据库",
-            desc: "PostgreSQL 17 关系型数据库，为各服务提供可靠的数据存储。",
-            tech: ["PostgreSQL", "数据库"],
-            links: [{ url: "http://192.168.31.2:5433", label: "🗄️ PostgreSQL" }],
         },
         {
             icon: "📦",
