@@ -122,7 +122,6 @@ export default function Projects() {
             links: [{ url: "http://192.168.31.2:3750", label: "📖 Byte-Muse" }],
         },
         {
-        {
             icon: "🗄️",
             name: "PostgreSQL 数据库",
             desc: "PostgreSQL 17 关系型数据库，为各服务提供可靠的数据存储。",
