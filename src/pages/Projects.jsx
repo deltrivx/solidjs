@@ -1,6 +1,5 @@
-import { onMount } from 'solid-js';
-import { A } from '@solidjs/router';
-import { initReveal, initTilt } from '../utils/animations';
+import { onMount } from "solid-js";
+import { initReveal, initTilt } from "../utils/animations";
 
 export default function Projects() {
     onMount(() => {
@@ -8,73 +7,133 @@ export default function Projects() {
         initTilt();
     });
 
+    const projects = [
+        {
+            icon: "🗄️",
+            name: "Cloud Storage",
+            desc: "基于 aria2 + qBittorrent + Transmission 的下载中心，支持各类协议。",
+            tech: ["aria2", "qBittorrent", "Transmission"],
+            links: [{ url: "http://192.168.31.2:6888", label: "🐻 Aria2" }, { url: "http://192.168.31.2:8080", label: "⚡ qBittorrent" }],
+        },
+        {
+            icon: "🎬",
+            name: "Emby 影音中心",
+            desc: "全平台媒体管理与串流服务器，整合影视资源库。",
+            tech: ["Emby Server", "NAS"],
+            links: [{ url: "http://192.168.31.2:8096", label: "🎞️ Emby" }],
+        },
+        {
+            icon: "🎯",
+            name: "MoviePilot",
+            desc: "自动化影视资源订阅与下载管理，辅以豆瓣榜单同步。",
+            tech: ["MoviePilot", "自动化"],
+            links: [{ url: "http://192.168.31.2:3000", label: "🎬 MoviePilot" }],
+        },
+        {
+            icon: "📡",
+            name: "PanSou 搜盘引擎",
+            desc: "网盘资源搜索引擎，聚合多方盘源。",
+            tech: ["搜索", "网盘"],
+            links: [{ url: "http://192.168.31.2:8880", label: "🔍 PanSou" }],
+        },
+        {
+            icon: "📥",
+            name: "Telegram 下载器",
+            desc: "自动抓取 Telegram 频道的媒体文件并下载到本地存储。",
+            tech: ["Telegram API", "自动化"],
+            links: [{ url: "http://192.168.31.2:5000", label: "📥 TG Downloader" }],
+        },
+        {
+            icon: "⚡",
+            name: "KV Rocks 缓存",
+            desc: "Apache Kvrocks 高性能键值存储，兼容 Redis 协议。",
+            tech: ["Kvrocks", "Redis"], 
+            links: [{ url: "http://192.168.31.2:6666", label: "🗄️ Kvrocks" }],
+        },
+        {
+            icon: "🤖",
+            name: "OpenClaw AI",
+            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
+            tech: ["AI Agent", "LLM"],
+            links: [{ url: "http://192.168.31.5:18789", label: "🤖 OpenClaw" }],
+        },
+        {
+            icon: "📊",
+            name: "Portainer 容器管理",
+            desc: "Docker 容器集群图形化管理面板。",
+            tech: ["Docker", "管理"],
+            links: [{ url: "http://192.168.31.2:9000", label: "🐳 Portainer" }],
+        },
+        {
+            icon: "🔄",
+            name: "DDNS-GO 动态解析",
+            desc: "自动更新域名解析记录，保障内网服务通过域名可达。",
+            tech: ["DNS", "自动运维"],
+            links: [{ url: "http://192.168.31.2:9876", label: "🌐 DDNS-GO" }],
+        },
+        {
+            icon: "📂",
+            name: "OpenList 目录索引",
+            desc: "轻量级文件目录索引与分享系统。",
+            tech: ["文件管理", "分享"],
+            links: [{ url: "http://192.168.31.2:5244", label: "📁 OpenList" }],
+        },
+        {
+            icon: "🐧",
+            name: "Xunlei 迅雷远程",
+            desc: "远程迅雷下载服务，支持磁力链接与 BT 下载。",
+            tech: ["下载", "P2P"],
+            links: [{ url: "http://192.168.31.2:2345", label: "⚡ Xunlei" }],
+        },
+        {
+            icon: "☁️",
+            name: "Cloud Saver",
+            desc: "云盘资源保存与同步工具。",
+            tech: ["云盘", "同步"],
+            links: [{ url: "http://192.168.31.2:8032", label: "☁️ CloudSaver" }],
+        },
+        {
+            icon: "🛡️",
+            name: "FlareSolverr",
+            desc: "Cloudflare 挑战解析代理，为自动化工具提供免验证访问。",
+            tech: ["代理", "反爬"],
+            links: [{ url: "http://192.168.31.2:8191", label: "🛡️ FlareSolverr" }],
+        },
+        {
+            icon: "📖",
+            name: "Byte-Muse 数字书房",
+            desc: "个人知识管理与阅读平台。",
+            tech: ["阅读", "知识管理"],
+            links: [{ url: "http://192.168.31.2:3750", label: "📖 Byte-Muse" }],
+        },
+    ];
+
     return (
         <section id="projects">
             <div class="section-header reveal">
-                <h2><span class="gradient-text">精选项目</span></h2>
-                <p>一些我引以为豪的作品</p>
+                <h2><span class="gradient-text">自建服务</span></h2>
+                <p>FnOS 服务器上运行的开源服务栈</p>
             </div>
             <div class="projects-grid">
-                {/* 项目一：AI 智能助手平台 */}
-                <div class="project-card reveal tilt-card">
-                    {/* 项目预览图展示区 */}
-                    <div class="project-preview">
-                        <div class="project-preview-bg pp-1">🧠</div>
-                    </div>
-                    <div class="project-info">
-                        <h3>AI 智能助手平台</h3>
-                        <p>基于大语言模型的智能对话平台，支持多轮对话、知识库检索和插件扩展。</p>
-                        {/* 项目使用的技术栈 */}
-                        <div class="project-tech">
-                            <span class="tech-tag">React</span>
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">LangChain</span>
+                {projects.map((p, i) => (
+                    <div class="project-card reveal tilt-card" style={{ animationDelay: i * 0.1 + "s" }}>
+                        <div class="project-preview">
+                            <div class="project-preview-bg" style={{ fontSize: "3rem", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                                {p.icon}
+                            </div>
                         </div>
-                        {/* 项目链接 */}
-                        <div class="project-links">
-                            <A href="#">🔗 在线演示</A>
-                            <A href="https://github.com/Chan-Kris" target="_blank" rel="noopener">📂 GitHub</A>
+                        <div class="project-info">
+                            <h3>{p.name}</h3>
+                            <p>{p.desc}</p>
+                            <div class="project-tech">
+                                {p.tech.map(t => <span class="tech-tag">{t}</span>)}
+                            </div>
+                            <div class="project-links">
+                                {p.links.map(lk => <a href={lk.url} target="_blank" rel="noopener">{lk.label}</a>)}
+                            </div>
                         </div>
                     </div>
-                </div>
-                {/* 项目二：实时数据可视化 */}
-                <div class="project-card reveal tilt-card">
-                    <div class="project-preview">
-                        <div class="project-preview-bg pp-2">📊</div>
-                    </div>
-                    <div class="project-info">
-                        <h3>实时数据可视化</h3>
-                        <p>高性能实时数据仪表盘，支持海量数据的流畅渲染和交互式分析。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">Vue.js</span>
-                            <span class="tech-tag">D3.js</span>
-                            <span class="tech-tag">WebSocket</span>
-                        </div>
-                        <div class="project-links">
-                            <A href="#">🔗 在线演示</A>
-                            <A href="https://github.com/Chan-Kris" target="_blank" rel="noopener">📂 GitHub</A>
-                        </div>
-                    </div>
-                </div>
-                {/* 项目三：音乐创作工具 */}
-                <div class="project-card reveal tilt-card">
-                    <div class="project-preview">
-                        <div class="project-preview-bg pp-3">🎵</div>
-                    </div>
-                    <div class="project-info">
-                        <h3>音乐创作工具</h3>
-                        <p>基于 Web Audio API 的在线音乐创作平台，支持 MIDI 和实时混音。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">TypeScript</span>
-                            <span class="tech-tag">Web Audio</span>
-                            <span class="tech-tag">WASM</span>
-                        </div>
-                        <div class="project-links">
-                            <A href="#">🔗 在线演示</A>
-                            <A href="https://github.com/Chan-Kris" target="_blank" rel="noopener">📂 GitHub</A>
-                        </div>
-                    </div>
-                </div>
+                ))}
             </div>
         </section>
     );
