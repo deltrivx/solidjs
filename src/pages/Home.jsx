@@ -37,7 +37,7 @@ export default function Home() {
             <section class="hero">
                 <div class="hero-content">
                     <span class="hero-badge">👋 欢迎来到我的个人主页</span>
-                    <h1>Hi, I'm <span class="gradient-text">Kris</span></h1>
+                    <h1>Hi, I'm <span class="gradient-text">DeltrivX<
                     <div class="typewriter" ref={typewriterEl}></div>
                     <div class="hero-buttons">
                         <A href="/projects" class="btn btn-primary">🚀 查看项目</A>
