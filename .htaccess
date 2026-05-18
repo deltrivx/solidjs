@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # 如果请求的是根目录，直接交给 index.php
+  RewriteRule ^$ index.php [L]
+  
+  # 如果请求的不是真实存在的文件，也交给 index.php 处理（实现单页面路由）
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . index.php [L]
+</IfModule>
