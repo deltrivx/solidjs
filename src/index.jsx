@@ -29,11 +29,11 @@ render(
               <Title>Kris | 关于我</Title>
               <Meta name="description" content="了解 Kris 的背景和经历" />
               <About />
-            <>
+            </>
           )} />
           <Route path="/skills" component={() => (
             <>
-              <Title>Kris | 技能須</Title>
+              <Title>Kris | 技能栈</Title>
               <Meta name="description" content="Kris 掌握的技术和工具" />
               <Skills />
             </>
@@ -41,7 +41,7 @@ render(
           <Route path="/projects" component={() => (
             <>
               <Title>Kris | 精选项目</Title>
-              <Meta name="description" content="Kris 引令为豪的作品" />
+              <Meta name="description" content="Kris 引以为豪的作品" />
               <Projects />
             </>
           )} />
