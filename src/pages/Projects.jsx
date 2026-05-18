@@ -129,6 +129,7 @@ export default function Projects() {
             tech: ["PostgreSQL", "数据库"],
             links: [{ url: "http://192.168.31.2:5433", label: "🗄️ PostgreSQL" }],
         },
+        {
             icon: "📦",
             name: "Redis 缓存",
             desc: "高性能内存缓存数据库，加速服务响应。",
