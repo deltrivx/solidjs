@@ -13,7 +13,7 @@ export default function Projects() {
             name: "Cloud Storage",
             desc: "基于 aria2 + qBittorrent + Transmission 的下载中心，支持各类协议。",
             tech: ["aria2", "qBittorrent", "Transmission"],
-            links: [{ url: "http://192.168.31.2:6880", label: "🎛️ AriaNg" }, { url: "http://192.168.31.2:6888", label: "🐻 Aria2" }, { url: "http://192.168.31.2:8080", label: "⚡ qBittorrent" }],
+            links: [{ url: "http://192.168.31.2:6880", label: "🎛️ AriaNg" }, { url: "http://192.168.31.2:9091", label: "📡 Transmission" }, { url: "http://192.168.31.2:8080", label: "⚡ qBittorrent" }],
         },
         {
             icon: "🎬",
