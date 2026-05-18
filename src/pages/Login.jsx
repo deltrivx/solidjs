@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from '@solidjs/router';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-    const [username, setUsername] = createSignal('');
+    const [username, setUsername] = createSignal('DeltrivX');
     const [password, setPassword] = createSignal('');
     const [remember, setRemember] = createSignal(false);
     const [error, setError] = createSignal('');
