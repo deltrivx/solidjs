@@ -17,12 +17,6 @@ export default function Projects() {
             links: [{ url: "https://fnos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
         },
         {
-            icon: "🏠",
-            name: "HomeAssistant",
-            desc: "智能家居控制系统，集成灯光、传感器、自动化场景等设备。",
-            tech: ["IoT", "智能家居"],
-            links: [{ url: "http://192.168.31.3:8123", label: "🔗 内网" }],
-        },
         {
             icon: "🪟",
             name: "宝塔面板",
