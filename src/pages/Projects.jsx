@@ -175,8 +175,8 @@ export default function Projects() {
     return (
         <section id="projects">
             <div class="section-header reveal">
-                <h2><span class="gradient-text">自建服务</span></h2>
-                <p>FnOS 服务器上运行的开源服务栈</p>
+                <h2><span class="gradient-text">精选项目</span></h2>
+                <p>一些我引以为豪的作品</p>
             </div>
             <div class="projects-grid">
                 {projects.map((p, i) => (
