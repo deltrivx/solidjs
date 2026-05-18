@@ -16,6 +16,7 @@ export default function Projects() {
             tech: ["FnOS", "NAS"],
             links: [{ url: "https://fnos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
         },
+        {
             icon: "🪟",
             name: "宝塔面板",
             desc: "服务器运维管理面板，可视化网站、数据库、FTP 管理。",
