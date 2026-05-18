@@ -170,6 +170,13 @@ export default function Projects() {
             tech: ["Nginx", "代理"],
             links: [{ url: "http://192.168.31.2:80", label: "🌐 Nginx" }],
         },
+        {
+            icon: "🪟",
+            name: "宝塔面板",
+            desc: "服务器运维管理面板，可视化网站、数据库、FTP 管理。",
+            tech: ["面板", "运维"],
+            links: [{ url: "http://192.168.31.5:19190/btpanel", label: "🔗 内网" }, { url: "https://baota.deltrivx.com/btpanel", label: "🌐 外网" }],
+        },
     ];
 
     return (
