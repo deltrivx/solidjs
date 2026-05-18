@@ -139,36 +139,38 @@ export default function Projects() {
             name: "KV Rocks 缓存",
             desc: "Apache Kvrocks 高性能键值存储，兼容 Redis 协议。",
             tech: ["Kvrocks", "Redis"], 
-            links: [{ url: "http://192.168.31.2:6666", label: "🔗 内网" }],
+            links: [],
+        },
+        {
+            icon: "🤖",
+            name: "OpenClaw AI",
+            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
+            tech: ["AI Agent", "LLM"],
+            links: [],
         },
 
-        {
-            icon: "☁️",
-            name: "Cloud Saver",
-            desc: "云盘资源保存与同步工具。",
-            tech: ["云盘", "同步"],
-            links: [{ url: "http://192.168.31.2:8032", label: "🔗 内网" }],
-        },
+
+
         {
             icon: "🛡️",
             name: "FlareSolverr",
             desc: "Cloudflare 挑战解析代理，为自动化工具提供免验证访问。",
             tech: ["代理", "反爬"],
-            links: [{ url: "http://192.168.31.2:8191", label: "🔗 内网" }],
+            links: [],
         },
         {
             icon: "🗄️",
             name: "PostgreSQL 数据库",
             desc: "PostgreSQL 17 关系型数据库，为各服务提供可靠的数据存储。",
             tech: ["PostgreSQL", "数据库"],
-            links: [{ url: "http://192.168.31.2:5433", label: "🔗 内网" }],
+            links: [],
         },
         {
             icon: "📦",
             name: "Redis 缓存",
             desc: "高性能内存缓存数据库，加速服务响应。",
             tech: ["Redis", "缓存"],
-            links: [{ url: "http://192.168.31.2:6379", label: "🔗 内网" }],
+            links: [],
         },
         {
             icon: "📺",
@@ -189,7 +191,7 @@ export default function Projects() {
             name: "Nginx 反向代理",
             desc: "Web 服务反向代理与负载均衡网关。",
             tech: ["Nginx", "代理"],
-            links: [{ url: "http://192.168.31.2:80", label: "🔗 内网" }],
+            links: [],
         },
 
     ];
