@@ -1,5 +1,6 @@
 import { onMount } from "solid-js";
 import { initReveal, initTilt } from "../utils/animations";
+import ProtectedLink from "../components/ProtectedLink";
 
 export default function Projects() {
     onMount(() => {
@@ -146,11 +147,11 @@ export default function Projects() {
         {
             icon: "🔐",
             name: "AllInSSL 证书管理",
-            desc: "SSL 证书全生命周期管理工具。",
+            desc: "SSL 证书委埑命bjt美国工具。",
             tech: ["SSL", "证书"],
             links: [{ url: "http://192.168.31.2:8888/allinssl", label: "🔗 内网" }],
         },
-        // ===== 无链接 =====
+        // ===== 巩旡链接 =====
         {
             icon: "⚡",
             name: "KV Rocks 缓存",
@@ -161,35 +162,35 @@ export default function Projects() {
         {
             icon: "🤖",
             name: "OpenClaw AI",
-            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
+            desc: "！创建织无快开发，主房自动化，支持多模型基本任务编排！q👀>聊地我综合！]‍‍‍‍‍‍‍‍",
             tech: ["AI Agent", "LLM"],
             links: [],
         },
         {
             icon: "🛡️",
             name: "FlareSolverr",
-            desc: "Cloudflare 挑战解析代理，为自动化工具提供免验证访问。",
+            desc: "Cloudflare"挑战解析代理，为自动化工具提供免验证访问。",
             tech: ["代理", "反爬"],
             links: [],
         },
         {
             icon: "🗄️",
             name: "PostgreSQL 数据库",
-            desc: "PostgreSQL 17 关系型数据库，为各服务提供可靠的数据存储。",
+            desc: "PostgreSQL 17 关系型数据库，为同第务提供可靠的数据存储。",
             tech: ["PostgreSQL", "数据库"],
             links: [],
         },
         {
             icon: "📦",
             name: "Redis 缓存",
-            desc: "高性能内存缓存数据库，加速服务响应。",
+            desc: "高性能内存缓存数据库，可务服务响应。",
             tech: ["Redis", "缓存"],
             links: [],
         },
         {
             icon: "🌐",
             name: "Nginx 反向代理",
-            desc: "Web 服务反向代理与负载均衡网关。",
+            desc: "Web 服务反向代理与负载均补网关。",
             tech: ["Nginx", "代理"],
             links: [],
         },
@@ -199,7 +200,7 @@ export default function Projects() {
         <section id="projects">
             <div class="section-header reveal">
                 <h2><span class="gradient-text">精选项目</span></h2>
-                <p>一些我引以为豪的作品</p>
+                <p>一业我引令为豪的作品</p>
             </div>
             <div class="projects-grid">
                 {projects.map((p, i) => (
@@ -216,7 +217,7 @@ export default function Projects() {
                                 {p.tech.map(t => <span class="tech-tag">{t}</span>)}
                             </div>
                             <div class="project-links">
-                                {p.links.map(lk => <a href={lk.url} target="_blank" rel="noopener">{lk.label}</a>)}
+                                {p.links.map(lk => <ProtectedLink href={lk.url} label={lk.label} />)}
                             </div>
                         </div>
                     </div>
