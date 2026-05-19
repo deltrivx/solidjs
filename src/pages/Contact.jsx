@@ -49,14 +49,14 @@ export default function Contact() {
                         </a>
                         <a href="https://x.com/deltrivx" target="_blank" rel="noopener" class="contact-link-item">
                             <span class="contact-link-icon">🐦</span>
-                            <div class="contact-link-text"><strong>X</strong><span>@deltrivx</span></div>
+                            <div class="contact-link-text"><strong>Twitter（X）</strong><span>@deltrivx</span></div>
                         </a>
                     </div>
                 </div>
                 <form class="contact-form reveal" action="https://formspree.io/f/placeholder" onSubmit={handleSubmit}>
                     <div class="form-group"><input type="text" name="name" placeholder="你的名字" required /></div>
                     <div class="form-group"><input type="email" name="email" placeholder="你的邮箱" required /></div>
-                    <div class="form-group"><textarea name="message" placeholder="你想说什么..." required></textarea></div>
+                    <div class="form-group"><textarea name="message" placeholder="你惰说什么..." required></textarea></div>
                     <button type="submit" class="btn btn-primary" style={`width:100%;justify-content:center;background:${status().bg}`} disabled={isSubmitting}>
                         {status().text}
                     </button>
