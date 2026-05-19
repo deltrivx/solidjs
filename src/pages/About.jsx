@@ -35,7 +35,7 @@ export default function About() {
             <div class="about-grid">
                 <div class="about-image-wrapper reveal"><div class="about-image">🏠</div></div>
                 <div class="about-text reveal">
-                    <h3>自建派 & AI 折腾党</h3>
+                    <h3>AI 折腾党 & 自建派</h3>
                     <p>我是 DeltrivX，一名热爱自建（self-hosting）的技术爱好者。从一台 FnOS 起步，逐步搭建起覆盖存储、影音、下载、AI 的家庭数据中心。</p>
                     <p>热衷于用 Docker 容器编排各类服务，打通 Cloudflare Tunnel 公网访问，构建属于自己的数字基础设施。同时也在探索 LLM 应用与 AIGC 的可能性。</p>
                     <div class="stats-row">
