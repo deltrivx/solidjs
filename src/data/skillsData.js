@@ -25,10 +25,10 @@ const skillsData = [
     {
         icon: '🤖',
         title: 'AI & AIGC',
-        description: '探索 LLM 应用与 AIGC 视频创作的无限可能',
+        description: '探索 AI 与 AIGC 视频创作的无限可能',
         tags: [
-            'LLM', 'RAG', 'AI Agent', 'TTS',
-            'AIGC 视频', 'ComfyUI'
+            'PyTorch', 'LLM', 'RAG', 'Agent',
+            'AIGC 视频', 'Runway', 'Sora', 'ComfyUI'
         ]
     },
     // ===== 方案 B：新增类别 =====
