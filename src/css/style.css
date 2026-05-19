@@ -647,3 +647,9 @@ html:not([data-vt-transition]) body {
         transform: translateX(30px);
     }
 }
+
+/* 对话框 */
+.dialog-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:1000}
+.dialog-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a2e;border:1px solid #333;border-radius:12px;padding:24px;min-width:260px;z-index:1001;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.user-icon{transition:transform 0.2s;display:inline-block}
+.user-icon:hover{transform:scale(1.15)}
