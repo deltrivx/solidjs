@@ -151,6 +151,20 @@ export default function Projects() {
             tech: ["SSL", "证书"],
             links: [{ url: "http://192.168.31.2:8888/allinssl", label: "🔗 内网" }],
         },
+        {
+            icon: "🖥️",
+            name: "MDCx 图形界面",
+            desc: "MDCx 媒体下载工具 GUI 版，基于 VNC 远程桌面操作。",
+            tech: ["媒体", "下载", "GUI"],
+            links: [{ url: "http://192.168.31.2:5800", label: "🔗 内网" }],
+        },
+        {
+            icon: "☁️",
+            name: "Cloud Saver 云盘转存",
+            desc: "115 网盘与阿里云盘自动转存工具。",
+            tech: ["网盘", "转存", "自动化"],
+            links: [{ url: "http://192.168.31.2:8032", label: "🔗 内网" }],
+        },
         // ===== 无链接 =====
         {
             icon: "⚡",
