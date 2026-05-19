@@ -33,7 +33,7 @@ export default function About() {
                 <p>自建基础设施玩家 · AI 应用探索者</p>
             </div>
             <div class="about-grid">
-                <div class="about-image-wrapper reveal"><div class="about-image">🏠</div></div>
+                <div class="about-image-wrapper reveal"><div class="about-image">🖥️</div></div>
                 <div class="about-text reveal">
                     <h3>AI 折腾党 & 自建派</h3>
                     <p>我是 DeltrivX，一名热爱自建（self-hosting）的技术爱好者。从一台 FnOS 起步，逐步搭建起覆盖存储、影音、下载、AI 的家庭数据中心。</p>
