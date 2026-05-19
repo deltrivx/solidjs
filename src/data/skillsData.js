@@ -24,11 +24,11 @@ const skillsData = [
     },
     {
         icon: '🤖',
-        title: 'AI & AIGC',
-        description: '探索 AI 与 AIGC 视频创作的无限可能',
+        title: 'AI 应用',
+        description: '大模型应用开发与智能代理系统',
         tags: [
-            'PyTorch', 'LLM', 'RAG', 'Agent',
-            'AIGC 视频', 'Runway', 'Sora', 'ComfyUI'
+            'LLM', 'RAG', 'AI Agent', 'TTS',
+            'Prompt Engineering'
         ]
     },
     // ===== 方案 B：新增类别 =====
