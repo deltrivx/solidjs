@@ -30,7 +30,7 @@ export default function About() {
         <section id="about">
             <div class="section-header reveal">
                 <h2><span class="gradient-text">关于我</span></h2>
-                <p>自建基础设施玩家 · AI 应用探索者</p>
+                <p>AI 应用探索者 · 自建基础设施玩家</p>
             </div>
             <div class="about-grid">
                 <div class="about-image-wrapper reveal"><div class="about-image">🖥️</div></div>
