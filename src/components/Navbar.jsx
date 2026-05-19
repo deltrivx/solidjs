@@ -34,7 +34,7 @@ export default function Navbar() {
                 <li><A href="/contact">联系</A></li>
                 <li>
                     {isLoggedIn() ? (
-                        <span class="user-icon" onClick={() => setShowDialog(true)} style="cursor:pointer;font-size:1.3rem;">👤</span>
+                        <span class="logged-in-text" onClick={() => setShowDialog(true)} style="cursor:pointer;color:#00d4ff;font-weight:bold;font-size:0.9rem;">已登录</span>
                     ) : (
                         <A href="/login" style="color:#007bff;font-weight:bold;">登录</A>
                     )}
@@ -45,8 +45,8 @@ export default function Navbar() {
                 <>
                     <div class="dialog-overlay" onClick={() => setShowDialog(false)}></div>
                     <div class="dialog-box">
-                        <p style="margin:0 0 10px;font-size:1rem;">当前用户：<strong>{username()}</strong></p>
-                        <p style="margin:0 0 20px;color:#888;font-size:0.9rem;">确定要退出登录吗？</p>
+                        <p style="margin:0 0 6px;font-size:1rem;">当前用户：<strong>{username()}</strong></p>
+                        <p style="margin:0 0 20px;color:#888;font-size:0.85rem;">确定要退出登录吗？退出后需重新输入密码访问项目链接。</p>
                         <div style="display:flex;gap:10px;justify-content:flex-end;">
                             <button onClick={() => setShowDialog(false)} style="padding:8px 20px;background:#333;color:#fff;border:none;border-radius:6px;cursor:pointer;">取消</button>
                             <button onClick={handleLogout} style="padding:8px 20px;background:#d33;color:#fff;border:none;border-radius:6px;cursor:pointer;">退出登录</button>
