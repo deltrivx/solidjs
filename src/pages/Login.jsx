@@ -11,10 +11,13 @@ function getRedirectParam() {
     return params.get('redirect') || '/';
 }
 
+function isExternalUrl(url) {
+    return url.startsWith('http://') || url.startsWith('https://');
+}
+
 export default function Login() {
     const [username, setUsername] = createSignal('DeltrivX');
     const [password, setPassword] = createSignal('');
-    const [remember, setRemember] = createSignal(false);
     const [error, setError] = createSignal('');
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -26,7 +29,12 @@ export default function Login() {
         const ok = await login(username(), password());
         if (ok) {
             const redirect = getRedirectParam();
-            navigate(redirect, { replace: true });
+            if (isExternalUrl(redirect)) {
+                window.open(redirect, '_blank');
+                navigate('/', { replace: true });
+            } else {
+                navigate(redirect, { replace: true });
+            }
         } else {
             setError('用户名或密码错误，请重试');
         }
@@ -47,9 +55,6 @@ export default function Login() {
                         style="width: 100%; padding: 10px; background: #1a1a2e; border: 1px solid #333; color: #fff; border-radius: 6px;" />
                 </div>
                 {error() && <p style="color: #ff4444; margin-bottom: 15px;">{error()}</p>}
-                <div style="margin-bottom: 20px;">
-                    <label><input type="checkbox" checked={remember()} onChange={(e) => setRemember(e.target.checked)} /> 记住我</label>
-                </div>
                 <button type="submit"
                     style="width: 100%; padding: 12px; background: #00d4ff; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">登录</button>
             </form>
