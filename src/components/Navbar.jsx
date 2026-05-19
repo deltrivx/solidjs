@@ -25,21 +25,23 @@ export default function Navbar() {
     };
 
     return (
-        <nav id="navbar" ref={navRef}>
-            <A href="/" class="logo" style="text-decoration:none;">DeltrivX</A>
-            <ul class="nav-links">
-                <li><A href="/about">关于</A></li>
-                <li><A href="/skills">技能</A></li>
-                <li><A href="/projects">项目</A></li>
-                <li><A href="/contact">联系</A></li>
-                <li>
-                    {isLoggedIn() ? (
-                        <span class="logged-in-text" onClick={() => setShowDialog(true)} style="cursor:pointer;color:#00d4ff;font-weight:bold;font-size:0.9rem;">已登录</span>
-                    ) : (
-                        <A href="/login" style="color:#007bff;font-weight:bold;">登录</A>
-                    )}
-                </li>
-            </ul>
+        <>
+            <nav id="navbar" ref={navRef}>
+                <A href="/" class="logo" style="text-decoration:none;">DeltrivX</A>
+                <ul class="nav-links">
+                    <li><A href="/about">关于</A></li>
+                    <li><A href="/skills">技能</A></li>
+                    <li><A href="/projects">项目</A></li>
+                    <li><A href="/contact">联系</A></li>
+                    <li>
+                        {isLoggedIn() ? (
+                            <span class="logged-in-text" onClick={() => setShowDialog(true)} style="cursor:pointer;color:#00d4ff;font-weight:bold;font-size:0.9rem;">已登录</span>
+                        ) : (
+                            <A href="/login" style="color:#007bff;font-weight:bold;">登录</A>
+                        )}
+                    </li>
+                </ul>
+            </nav>
 
             {showDialog() && (
                 <>
@@ -54,6 +56,6 @@ export default function Navbar() {
                     </div>
                 </>
             )}
-        </nav>
+        </>
     );
 }
