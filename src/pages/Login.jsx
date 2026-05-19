@@ -31,9 +31,11 @@ export default function Login() {
             const redirect = getRedirectParam();
             if (isExternalUrl(redirect)) {
                 window.open(redirect, '_blank');
-                navigate('/', { replace: true });
-            } else {
+                navigate('/projects', { replace: true });
+            } else if (redirect !== '/') {
                 navigate(redirect, { replace: true });
+            } else {
+                navigate('/', { replace: true });
             }
         } else {
             setError('用户名或密码错误，请重试');
