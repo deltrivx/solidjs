@@ -10,6 +10,7 @@ import Projects from './pages/Projects';
 import Articles from './pages/Articles';
 import ArticleDualStack from './pages/articles/ArticleDualStack';
 import ArticleHomenetQX from './pages/articles/ArticleHomenetQX';
+import ArticleFnosOpenClawStore from './pages/articles/ArticleFnosOpenClawStore';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import './css/style.css';
@@ -52,6 +53,12 @@ render(
               <Title>Kris | 文章</Title>
               <Meta name="description" content="Kris 分享的技术文章与思考" />
               <Articles />
+            </>
+          )} />
+          <Route path="/article/fnos-openclaw-store-optimization" component={() => (
+            <>
+              <Title>Kris | 飞牛系统商店版 OpenClaw 优化实战</Title>
+              <ArticleFnosOpenClawStore />
             </>
           )} />
           <Route path="/article/homenet-qx" component={() => (
