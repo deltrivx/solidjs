@@ -38,7 +38,7 @@ export default function Articles() {
     return (
         <section id="articles">
             <div class="section-header reveal">
-                <h2><span class="gradient-text">文章</span></h2>
+                <h2><span class="gradient-text">技术实战</span></h2>
                 <p>分享我的思考和见解</p>
             </div>
             <div class="articles-list">
