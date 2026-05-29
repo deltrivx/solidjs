@@ -10,6 +10,14 @@ export default function Articles() {
 
     const articles = [
         {
+            title: '飞牛系统商店版 OpenClaw 优化实战：启动守护、路径复刻与更新按钮增强',
+            subtitle: 'FnOS App Center · trim.openclaw · systemd 兜底自启 · Gateway loopback · 插件优先更新',
+            date: '2026-05-29',
+            tags: ['FnOS', 'OpenClaw', 'systemd', 'Bun', 'Gateway'],
+            summary: '完整记录飞牛系统商店版 OpenClaw 的运行路径、用户权限、systemd 兜底启动脚本、控制面板检查更新按钮逻辑，以及更新前检查商店插件、优先升级渠道插件的优化方案。按文中路径与脚本，可在另一台 FnOS 设备复刻一致运行环境。',
+            slug: 'fnos-openclaw-store-optimization'
+        },
+        {
             title: 'iOS Quantumult X 异地接入内网：HomeNet 双节点实战指南',
             subtitle: 'Cloudflare Tunnel + Sub-Store + Shadowsocks over WSS · 从零到可用的内网回家方案',
             date: '2026-05-29',
