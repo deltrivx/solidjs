@@ -111,33 +111,33 @@ export default function ArticleFnosOpenClawStore() {
 
                     <pre>{`#!/bin/bash
 
-LOG_FILE="${TRIM_PKGVAR}/info.log"
-PID_FILE="${TRIM_PKGVAR}/app.pid"
+LOG_FILE="\${TRIM_PKGVAR}/info.log"
+PID_FILE="\${TRIM_PKGVAR}/app.pid"
 
 # Bun / Node.js path
 export PATH=/var/apps/bunjs/target/bin:/var/apps/nodejs_v24/target/bin:$PATH
 
 # Data directory (@apphome)
-OPENCLAW_DATA_DIR="${TRIM_PKGHOME}/data"
+OPENCLAW_DATA_DIR="\${TRIM_PKGHOME}/data"
 
 # Static files directory (frontend)
-STATIC_DIR="${TRIM_APPDEST}/ui"
-SOCKET_PATH="${TRIM_APPDEST}/trim.openclaw.sock"
-OPENCLAW_PATCHES_DIR="${TRIM_APPDEST}/vendor/openclaw-patches/dist"
+STATIC_DIR="\${TRIM_APPDEST}/ui"
+SOCKET_PATH="\${TRIM_APPDEST}/trim.openclaw.sock"
+OPENCLAW_PATCHES_DIR="\${TRIM_APPDEST}/vendor/openclaw-patches/dist"
 
 # Custom SOUL.md shipped with this package
-SOUL_MD_SRC="${TRIM_APPDEST}/../config/prompts/SOUL.md"
+SOUL_MD_SRC="\${TRIM_APPDEST}/../config/prompts/SOUL.md"
 
 # Monitor command
-CMD="env OPENCLAW_DATA_DIR=\"${OPENCLAW_DATA_DIR}\" STATIC_DIR=\"${STATIC_DIR}\" SOUL_MD_SRC=\"${SOUL_MD_SRC}\" MONITOR_SOCKET_PATH=\"${SOCKET_PATH}\" MONITOR_ACCESS_MODE=\"public\" OPENCLAW_PATCHES_DIR=\"${OPENCLAW_PATCHES_DIR}\" bun \"${TRIM_APPDEST}/server/index.js\""
+CMD="env OPENCLAW_DATA_DIR=\"\${OPENCLAW_DATA_DIR}\" STATIC_DIR=\"\${STATIC_DIR}\" SOUL_MD_SRC=\"\${SOUL_MD_SRC}\" MONITOR_SOCKET_PATH=\"\${SOCKET_PATH}\" MONITOR_ACCESS_MODE=\"public\" OPENCLAW_PATCHES_DIR=\"\${OPENCLAW_PATCHES_DIR}\" bun \"\${TRIM_APPDEST}/server/index.js\""
 
 log_msg() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> \${LOG_FILE}
 }
 
 check_process() {
     local pid=$1
-    if kill -0 "${pid}" 2>/dev/null; then
+    if kill -0 "\${pid}" 2>/dev/null; then
         return 0
     else
         return 1
@@ -145,12 +145,12 @@ check_process() {
 }
 
 status() {
-    if [ -f "${PID_FILE}" ]; then
-        pid=$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')
-        if check_process "${pid}"; then
+    if [ -f "\${PID_FILE}" ]; then
+        pid=$(head -n 1 "\${PID_FILE}" | tr -d '[:space:]')
+        if check_process "\${pid}"; then
             return 0
         else
-            rm -f "${PID_FILE}"
+            rm -f "\${PID_FILE}"
         fi
     fi
     return 1
@@ -167,46 +167,46 @@ start_process() {
     fi
 
     log_msg "Starting process ..."
-    rm -f "${SOCKET_PATH}"
-    bash -c "${CMD}" >> ${LOG_FILE} 2>&1 &
-    printf "%s" "$!" > ${PID_FILE}
+    rm -f "\${SOCKET_PATH}"
+    bash -c "\${CMD}" >> \${LOG_FILE} 2>&1 &
+    printf "%s" "$!" > \${PID_FILE}
     return 0
 }
 
 stop_process() {
     log_msg "Stopping process ..."
 
-    if [ -r "${PID_FILE}" ]; then
-        pid=$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')
+    if [ -r "\${PID_FILE}" ]; then
+        pid=$(head -n 1 "\${PID_FILE}" | tr -d '[:space:]')
 
-        log_msg "pid=${pid}"
-        if ! check_process "${pid}"; then
-            rm -f "${PID_FILE}"
+        log_msg "pid=\${pid}"
+        if ! check_process "\${pid}"; then
+            rm -f "\${PID_FILE}"
             log_msg "remove pid file 1"
             return
         fi
 
-        log_msg "send TERM signal to PID:${pid}..."
-        kill -TERM ${pid} >> ${LOG_FILE} 2>&1
+        log_msg "send TERM signal to PID:\${pid}..."
+        kill -TERM \${pid} >> \${LOG_FILE} 2>&1
 
         local count=0
-        while check_process "${pid}" && [ $count -lt 10 ]; do
+        while check_process "\${pid}" && [ $count -lt 10 ]; do
             sleep 1
             count=$((count + 1))
-            log_msg "waiting process terminal... (${count}s/10s)"
+            log_msg "waiting process terminal... (\${count}s/10s)"
         done
 
-        if check_process "${pid}"; then
-            log_msg "send KILL signal to PID:${pid}..."
-            kill -KILL "${pid}"
+        if check_process "\${pid}"; then
+            log_msg "send KILL signal to PID:\${pid}..."
+            kill -KILL "\${pid}"
             sleep 1
-            rm -f "${PID_FILE}"
+            rm -f "\${PID_FILE}"
         else
             log_msg "process killed... "
         fi
     fi
 
-    rm -f "${SOCKET_PATH}"
+    rm -f "\${SOCKET_PATH}"
     return 0
 }
 
@@ -294,38 +294,38 @@ WantedBy=multi-user.target`}</pre>
 set -euo pipefail
 
 APP_NAME="trim.openclaw"
-APP_MAIN="/var/apps/${APP_NAME}/cmd/main"
+APP_MAIN="/var/apps/\${APP_NAME}/cmd/main"
 GATEWAY_HOST="127.0.0.1"
 GATEWAY_PORT="25730"
 LOG_FILE="/var/log/openclaw-ensure.log"
 
 log() {
-  printf '%s %s\n' "$(date '+%F %T')" "$*" >> "${LOG_FILE}"
+  printf '%s %s\n' "$(date '+%F %T')" "$*" >> "\${LOG_FILE}"
 }
 
 is_listening() {
-  ss -ltn 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)${GATEWAY_PORT}$"
+  ss -ltn 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)\${GATEWAY_PORT}$"
 }
 
 http_ready() {
-  curl -fsS --max-time 3 "http://${GATEWAY_HOST}:${GATEWAY_PORT}/" >/dev/null 2>&1
+  curl -fsS --max-time 3 "http://\${GATEWAY_HOST}:\${GATEWAY_PORT}/" >/dev/null 2>&1
 }
 
 start_store_app() {
-  if [ ! -x "${APP_MAIN}" ]; then
-    log "ERROR: ${APP_MAIN} not found or not executable"
+  if [ ! -x "\${APP_MAIN}" ]; then
+    log "ERROR: \${APP_MAIN} not found or not executable"
     return 1
   fi
 
-  log "starting ${APP_NAME} via ${APP_MAIN} start"
-  "${APP_MAIN}" start || true
+  log "starting \${APP_NAME} via \${APP_MAIN} start"
+  "\${APP_MAIN}" start || true
 }
 
 wait_ready() {
   local i
   for i in $(seq 1 60); do
     if is_listening || http_ready; then
-      log "OpenClaw Gateway is ready on ${GATEWAY_HOST}:${GATEWAY_PORT}"
+      log "OpenClaw Gateway is ready on \${GATEWAY_HOST}:\${GATEWAY_PORT}"
       return 0
     fi
     sleep 2
@@ -336,7 +336,7 @@ wait_ready() {
 
 main() {
   if is_listening || http_ready; then
-    log "OpenClaw Gateway already running on ${GATEWAY_HOST}:${GATEWAY_PORT}"
+    log "OpenClaw Gateway already running on \${GATEWAY_HOST}:\${GATEWAY_PORT}"
     exit 0
   fi
 
@@ -476,7 +476,7 @@ const OPENCLAW_VERSION =
   process.env.OPENCLAW_VERSION || "2026.5.4";
 
 const OPENCLAW_PACKAGE_SPEC =
-  \`openclaw@${OPENCLAW_VERSION}\`;
+  \`openclaw@\${OPENCLAW_VERSION}\`;
 
 const OPENCLAW_UPDATE_PACKAGE_SPEC =
   process.env.OPENCLAW_UPDATE_PACKAGE_SPEC || "openclaw@latest";`}</pre>
@@ -521,14 +521,14 @@ const OPENCLAW_UPDATE_PACKAGE_SPEC =
 set -euo pipefail
 
 APP_NAME="trim.openclaw"
-PSQL_BIN="${PSQL_BIN:-/usr/bin/psql}"
-DB_NAME="${DB_NAME:-appcenter}"
+PSQL_BIN="\${PSQL_BIN:-/usr/bin/psql}"
+DB_NAME="\${DB_NAME:-appcenter}"
 
 log() {
   printf '%s\n' "$*"
 }
 
-if ! command -v "${PSQL_BIN}" >/dev/null 2>&1; then
+if ! command -v "\${PSQL_BIN}" >/dev/null 2>&1; then
   log "未找到 psql，跳过 FnOS 商店插件更新检查"
   exit 0
 fi
@@ -538,24 +538,24 @@ SELECT
   COALESCE(installed.version, '') AS installed_version,
   COALESCE(candidate.version, '') AS candidate_version
 FROM
-  (SELECT version FROM app_package WHERE app_name = '${APP_NAME}' AND installed = true ORDER BY id DESC LIMIT 1) installed
+  (SELECT version FROM app_package WHERE app_name = '\${APP_NAME}' AND installed = true ORDER BY id DESC LIMIT 1) installed
 FULL JOIN
-  (SELECT version FROM app_package WHERE app_name = '${APP_NAME}' AND installed = false ORDER BY id DESC LIMIT 1) candidate
+  (SELECT version FROM app_package WHERE app_name = '\${APP_NAME}' AND installed = false ORDER BY id DESC LIMIT 1) candidate
 ON true;
 "
 
-RESULT=$("${PSQL_BIN}" -d "${DB_NAME}" -Atc "${SQL}" 2>/dev/null || true)
+RESULT=$("\${PSQL_BIN}" -d "\${DB_NAME}" -Atc "\${SQL}" 2>/dev/null || true)
 
-if [ -z "${RESULT}" ]; then
-  log "未查询到 ${APP_NAME} 的商店更新信息，继续 OpenClaw 更新流程"
+if [ -z "\${RESULT}" ]; then
+  log "未查询到 \${APP_NAME} 的商店更新信息，继续 OpenClaw 更新流程"
   exit 0
 fi
 
-INSTALLED=$(printf '%s' "${RESULT}" | awk -F '|' '{print $1}')
-CANDIDATE=$(printf '%s' "${RESULT}" | awk -F '|' '{print $2}')
+INSTALLED=$(printf '%s' "\${RESULT}" | awk -F '|' '{print $1}')
+CANDIDATE=$(printf '%s' "\${RESULT}" | awk -F '|' '{print $2}')
 
-if [ -n "${CANDIDATE}" ] && [ "${CANDIDATE}" != "${INSTALLED}" ]; then
-  log "发现飞牛商店插件新版本: ${INSTALLED:-unknown} → ${CANDIDATE}"
+if [ -n "\${CANDIDATE}" ] && [ "\${CANDIDATE}" != "\${INSTALLED}" ]; then
+  log "发现飞牛商店插件新版本: \${INSTALLED:-unknown} → \${CANDIDATE}"
   log "请先在 FnOS App Center 中更新『飞牛 OpenClaw』插件，再回到控制面板升级 OpenClaw。"
   exit 2
 fi
@@ -568,7 +568,7 @@ exit 0`}</pre>
                     <pre>{`if (action === "update") {
   enqueue("检查 FnOS 商店插件是否有更新...");
   const check = Bun.spawnSync({
-    cmd: ["bash", `\${instance.installDir}/scripts/check-store-plugin-update.sh`],
+    cmd: ["bash", instance.installDir + "/scripts/check-store-plugin-update.sh"],
     stdout: "pipe",
     stderr: "pipe",
     env: process.env,
@@ -591,7 +591,7 @@ exit 0`}</pre>
 
 if (action === "update") {
   for (const pkg of channelPkgs) {
-    enqueue(`升级渠道插件 \${pkg} ...`);
+    enqueue("升级渠道插件 " + pkg + " ...");
     const pluginResult = Bun.spawnSync({
       cmd: [
         bunPath,
@@ -613,7 +613,7 @@ if (action === "update") {
     if (stderr) enqueue(stderr);
 
     if (pluginResult.exitCode !== 0) {
-      throw new Error(`渠道插件 \${pkg} 更新失败`);
+      throw new Error("渠道插件 " + pkg + " 更新失败");
     }
   }
 }`}</pre>
