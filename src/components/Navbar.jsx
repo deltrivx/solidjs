@@ -32,7 +32,7 @@ export default function Navbar() {
                     <li><A href="/about">关于</A></li>
                     <li><A href="/skills">技能</A></li>
                     <li><A href="/projects">项目</A></li>
-                    <li><A href="/articles">文章</A></li>
+                    <li><A href="/articles">实战</A></li>
                     <li>
                         {isLoggedIn() ? (
                             <span class="logged-in-text" onClick={() => setShowDialog(true)} style="cursor:pointer;color:#00d4ff;font-weight:bold;font-size:0.9rem;">已登录</span>
