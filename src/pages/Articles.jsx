@@ -26,6 +26,14 @@ export default function Articles() {
             slug: 'homenet-qx'
         },
         {
+            title: '飞牛系统（FnOS）核显温度显示补丁：从原理到实现',
+            subtitle: 'Intel iGPU · WebSocket 代理 · JS 注入 · bind-mount · FnOS 资源监控面板适配',
+            date: '2026-05-24',
+            tags: ['FnOS', 'iGPU', 'Intel', 'WebSocket', '系统补丁'],
+            summary: 'Intel 核显在 FnOS 面板中温度显示为空的解决方案。通过 WebSocket 代理拦截资源监控通信，将 CPU 封装温度回填到 GPU 温度字段，配合 JS 注入和 bind-mount 挂载实现无痕补丁。文章附带完整的部署脚本、卸载方法、备份恢复流程和故障排查指南。',
+            slug: 'fnos-igpu-temp'
+        },
+        {
             title: '从零搭建双栈域名体系：Cloudflare Tunnel + 内网穿透完全指南',
             subtitle: 'V4/V6 双栈 · 域名统一接入 · 内外网分流防回环',
             date: '2026-05-28',
