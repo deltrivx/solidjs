@@ -73,38 +73,30 @@ bt 16   # 修复面板（可选）`}</pre>
 ├── install.sh              # 安装脚本
 └── info.json               # 插件元信息`}</pre>
 
-                    <h2>四、从 Node 到 PM2 的迁移</h2>
+                    <h2>四、PM2 在先，插件在后的部署顺序</h2>
 
-                    <h3>4.1 原生的进程管理</h3>
-                    <p>插件安装后 Gateway 由 <code>openclaw gateway</code> 直接启动，进程由宝塔插件 Python 后端管理。这种方式的问题是：</p>
-                    <ul>
-                        <li>进程崩溃后无法自动重启</li>
-                        <li>日志管理不完善</li>
-                        <li>重启需要进入插件面板操作</li>
-                    </ul>
+                    <h3>4.1 实际部署时间线</h3>
+                    <p>这台服务器的实际顺序并非「插件自带 PM2」，而是：</p>
+                    <ol>
+                        <li><strong>先手动安装 PM2</strong>：用于管理已有的 Node.js 服务进程</li>
+                        <li><strong>后从宝塔软件商店安装 OpenClaw 插件</strong></li>
+                        <li>插件安装时执行 <code>npm i -g openclaw</code> 安装 OpenClaw 本体</li>
+                        <li>用已存在的 PM2 接管 Gateway 进程</li>
+                    </ol>
 
-                    <h3>4.2 迁移到 PM2</h3>
-                    <p>为了解决上述问题，将 Gateway 托管给 PM2：</p>
-                    <pre>{`# 1. 确认 Node.js 路径
-which node
-# /www/server/nvm/versions/node/v24.16.0/bin/node
+                    <h3>4.2 PM2 管理 Gateway</h3>
+                    <pre>{`$ pm2 start openclaw -- gateway --port 18789
+$ pm2 save
+$ pm2 startup
 
-# 2. 用 PM2 启动
-pm2 start openclaw -- gateway --port 18789
-
-# 3. 保存进程列表并设置开机自启
-pm2 save
-pm2 startup
-
-# 4. 验证
-pm2 list
+$ pm2 list
 ┌────┬───────────┬──────────┬──────┬──────────┬──────┬───────────┐
 │ id │ name      │ version  │ pid  │ uptime   │ ↺    │ status    │
 ├────┼───────────┼──────────┼──────┼──────────┼──────┼───────────┤
 │ 2  │ openclaw  │ 2026.5.…│409876│ 3h       │ 23   │ online    │
 └────┴───────────┴──────────┴──────┴──────────┴──────┴───────────┘`}</pre>
 
-                    <p>PM2 的好处：自动重启、日志轮转、资源监控。但<strong>重启计数（↺=23）过高</strong>说明存在配置问题，需要排查。</p>
+                    <p><strong>注意 restart 计数（↺=23）</strong>：重启次数过高说明配置有异常，常见原因见第五节。</p>
 
                     <h3>4.3 重启频繁的根因</h3>
                     <p>通过 PM2 错误日志排查：</p>
