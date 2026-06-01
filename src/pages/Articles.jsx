@@ -41,6 +41,14 @@ export default function Articles() {
             summary: '详解如何通过 Cloudflare Tunnel 实现域名的 V4+V6 双栈接入，涵盖 CF 前期准备、Tunnel 部署、DNS 批量配置、内网防回环方案，以及最终的双栈验证方法。',
             slug: 'dual-stack-domain'
         },
+        {
+            title: 'OpenClaw 记忆优化实战：Ollama Embedding + memory-core 本地化部署',
+            subtitle: 'Nomic Embed Text · FnOS Ollama 容器 · 多 OpenClaw 实例 provider 统一管理 · memory-core 语义搜索恢复',
+            date: '2026-06-01',
+            tags: ['OpenClaw', 'Ollama', 'Embedding', 'Memory-Core', 'FnOS', 'Nomic'],
+            summary: 'OpenAI embedding 503 → 自建 Ollama nomic-embed-text 向量化服务。多 OpenClaw 实例 provider 同步管理、Telegram 通道故障排查、ingress 锁文件恢复。从配置到运维全覆盖。',
+            slug: 'memory-embed-ollama'
+        },
     ];
 
     return (
