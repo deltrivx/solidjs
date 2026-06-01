@@ -12,6 +12,7 @@ import ArticleDualStack from './pages/articles/ArticleDualStack';
 import ArticleHomenetQX from './pages/articles/ArticleHomenetQX';
 import ArticleFnosOpenClawStore from './pages/articles/ArticleFnosOpenClawStore';
 import ArticleFnosIgpuTemp from './pages/articles/ArticleFnosIgpuTemp';
+import ArticleMemoryEmbedOllama from './pages/articles/ArticleMemoryEmbedOllama';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import './css/style.css';
@@ -72,6 +73,12 @@ render(
             <>
               <Title>Kris | 双栈域名体系完全指南</Title>
               <ArticleDualStack />
+            </>
+          )} />
+          <Route path="/article/memory-embed-ollama" component={() => (
+            <>
+              <Title>Kris | OpenClaw 记忆优化：Ollama Embedding + memory-core</Title>
+              <ArticleMemoryEmbedOllama />
             </>
           )} />
           <Route path="/article/fnos-igpu-temp" component={() => (
