@@ -13,6 +13,7 @@ import ArticleHomenetQX from './pages/articles/ArticleHomenetQX';
 import ArticleFnosOpenClawStore from './pages/articles/ArticleFnosOpenClawStore';
 import ArticleFnosIgpuTemp from './pages/articles/ArticleFnosIgpuTemp';
 import ArticleMemoryEmbedOllama from './pages/articles/ArticleMemoryEmbedOllama';
+import ArticleOpenClawBaotaPm2 from './pages/articles/ArticleOpenClawBaotaPm2';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import './css/style.css';
@@ -55,6 +56,12 @@ render(
               <Title>Kris | 文章</Title>
               <Meta name="description" content="Kris 分享的技术文章与思考" />
               <Articles />
+            </>
+          )} />
+          <Route path="/article/openclaw-baota-pm2" component={() => (
+            <>
+              <Title>Kris | 宝塔面板 OpenClaw PM2 托管与运维</Title>
+              <ArticleOpenClawBaotaPm2 />
             </>
           )} />
           <Route path="/article/fnos-openclaw-store-optimization" component={() => (
