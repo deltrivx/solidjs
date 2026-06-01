@@ -12,8 +12,8 @@ export default function ArticleOpenClawBaotaPm2() {
             <div class="article-container reveal">
                 <A href="/articles" class="back-link">← 返回文章列表</A>
                 <div class="article-header">
-                    <h1>宝塔插件 OpenClaw 部署实录：PM2 在先、软件商店安装与环境变量优化</h1>
-                    <p class="article-subtitle">先装 PM2 · 软件商店安装 · 无左菜单 · 更新按钮失效 · 环境变量透传</p>
+                    <h1>宝塔插件 OpenClaw 部署实录</h1>
+                    <p class="article-subtitle">PM2 在先 · 软件商店安装 · 更新按钮修复 · 环境变量透传</p>
                     <div class="article-meta">
                         <span class="article-date">2026-06-01</span>
                         <div class="article-tags">
@@ -49,24 +49,29 @@ openclaw gateway start`}</pre>
                     <blockquote>宝塔面板 → 软件商店 → 已安装 → 找到 OpenClaw → 点击「设置」</blockquote>
                     <p>进入后可看到完整的 Vue 面板：AI 对话、角色管理、模型管理、技能管理、消息平台、服务管理、WebUI 七大模块。</p>
 
-                    <h2>三、开通后能做什么</h2>
-                    <p>宝塔插件版 OpenClaw 的面板集成度很高，安装后左侧菜单会显示以下功能模块：</p>
+                    <h2>三、插件面板功能总览</h2>
+                    <p>通过本机插件 API 接口查到的实际功能模块：</p>
                     <ul>
-                        <li><strong>AI 对话</strong>：直接发起对话、切换角色、新建会话，集成默认模型（qwen3.5-plus）</li>
-                        <li><strong>角色管理</strong>：新建、编辑角色，支持身份、定义、性格等详细配置</li>
+                        <li><strong>应用管理</strong>：安装配置、启动/停止/重启、端口设置、日志查看</li>
                         <li><strong>模型管理</strong>：添加/编辑/删除模型供应商，设置默认模型</li>
-                        <li><strong>技能管理</strong>：已安装技能列表，在线技能市场搜索和安装</li>
-                        <li><strong>消息平台</strong>：接入 QQ、飞书、钉钉、企业微信、Telegram</li>
-                        <li><strong>服务管理</strong>：查看运行状态、停止/重启、日志、端口、配置文件路径</li>
-                        <li><strong>WebUI</strong>：查看启用状态和访问地址</li>
-                        <li><strong>安全检查</strong>：安全基线扫描</li>
+                        <li><strong>角色管理</strong>：新建、编辑、删除角色，支持身份和性格配置</li>
+                        <li><strong>技能管理</strong>：已安装技能列表，在线技能市场搜索安装</li>
+                        <li><strong>消息平台</strong>：接入 QQ、飞书、钉钉、企业微信</li>
+                        <li><strong>WebUI</strong>：启用/关闭开关</li>
+                        <li><strong>安全检查</strong>：安全基线扫描与评分</li>
+                        <li><strong>更新检查</strong>：检查版本并更新</li>
+                        <li><strong>用量查询</strong>：查看额度使用情况</li>
+                        <li><strong>工作区文件</strong>：管理 Agent 工作区文件</li>
                     </ul>
-                    <p>安装目录位于：</p>
-                    <pre>{`/www/server/panel/plugin/openclaw/
-├── index.html              # Vue 面板前端
-├── openclaw_main.py        # Python 后端
+                    <p>插件所在目录：</p>
+                    <pre>{`宝塔面板 → 软件商店 → 已安装 → 找到 OpenClaw → 点击「设置」
+实际路径：/www/server/panel/plugin/openclaw/
+├── openclaw_main.py        # Python 后端（~30+ API）
+├── index.html              # 编译后的 Vue 面板
 ├── install.sh              # 安装脚本
-└── info.json               # 插件元信息`}</pre>
+├── info.json               # 插件元信息（v1.1.3）
+├── rules/                  # 安全检查规则
+└── clawhub_registry.json   # 注册表配置`}</pre>
 
                     <h2>四、PM2 在先，插件在后的部署顺序</h2>
 
