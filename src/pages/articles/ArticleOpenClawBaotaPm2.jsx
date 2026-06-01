@@ -12,8 +12,8 @@ export default function ArticleOpenClawBaotaPm2() {
             <div class="article-container reveal">
                 <A href="/articles" class="back-link">← 返回文章列表</A>
                 <div class="article-header">
-                    <h1>宝塔插件 OpenClaw 部署实录：从左侧菜单修复到 PM2 迁移与环境变量优化</h1>
-                    <p class="article-subtitle">软件商店安装 · 左侧菜单修复 · Node 转 PM2 · 更新按钮环境变量 · 控制面板优化</p>
+                    <h1>宝塔插件 OpenClaw 部署实录：PM2 在先、软件商店安装与环境变量优化</h1>
+                    <p class="article-subtitle">先装 PM2 · 软件商店安装 · 无左菜单 · 更新按钮失效 · 环境变量透传</p>
                     <div class="article-meta">
                         <span class="article-date">2026-06-01</span>
                         <div class="article-tags">
@@ -32,27 +32,22 @@ export default function ArticleOpenClawBaotaPm2() {
                     <p>OpenClaw（又名 Clawdbot / 龙虾）是一款个人 AI 助手框架，支持接入多种消息平台、安装技能扩展能力。2025 年底，宝塔面板上线了<strong>宿主机安装版 OpenClaw 插件</strong>（非 Docker 版），直接整合到面板中进行安装和管理。</p>
                     <p>本文记录在 TencentOS + 宝塔面板 9.x 环境下安装 OpenClaw 插件后遇到的一系列问题及完整的优化过程。</p>
 
-                    <h2>二、安装与踩坑</h2>
+                    <h2>二、安装</h2>
 
                     <h3>2.1 软件商店安装</h3>
-                    <p>打开宝塔面板 → 软件商店 → 搜索「OpenClaw」→ 安装插件。如果搜索不到，需要先点击右上角「更新软件列表」。</p>
-                    <p>安装过程中，插件会执行以下操作：</p>
-                    <pre>{`# 安装 Node.js（如未安装）
-# 全局安装 OpenClaw
+                    <p>打开宝塔面板 → 软件商店 → 搜索「OpenClaw」→ 安装插件。如果搜索不到，先点击右上角「更新软件列表」刷新缓存。</p>
+                    <p>安装过程中插件会执行：</p>
+                    <pre>{`# 全局安装 OpenClaw
 npm i -g openclaw
 
 # 启动 Gateway
 openclaw gateway start`}</pre>
-                    <p>安装完成后，Gateway 默认以 <code>openclaw gateway</code> 进程运行在 <code>0.0.0.0:18789</code>。</p>
+                    <p>安装完成后 Gateway 运行在 <code>0.0.0.0:18789</code>。</p>
 
-                    <h3>2.2 左侧菜单不显示</h3>
-                    <p>安装后进入宝塔面板左侧菜单，发现 OpenClaw 插件入口<strong>没有出现</strong>。这是因为插件的菜单注册需要刷新面板缓存。</p>
-                    <p>修复方法：</p>
-                    <pre>{`# 宝塔面板 → 设置 → 清除缓存
-# 或 SSH 执行
-bt 9    # 清除面板缓存
-bt 16   # 修复面板（可选）`}</pre>
-                    <p>清除缓存后刷新页面，左侧菜单即可显示 OpenClaw 入口。</p>
+                    <h3>2.2 面板入口位置</h3>
+                    <p>OpenClaw 插件<strong>没有左侧菜单栏入口</strong>，控制面板位于：</p>
+                    <blockquote>宝塔面板 → 软件商店 → 已安装 → 找到 OpenClaw → 点击「设置」</blockquote>
+                    <p>进入后可看到完整的 Vue 面板：AI 对话、角色管理、模型管理、技能管理、消息平台、服务管理、WebUI 七大模块。</p>
 
                     <h2>三、开通后能做什么</h2>
                     <p>宝塔插件版 OpenClaw 的面板集成度很高，安装后左侧菜单会显示以下功能模块：</p>
@@ -201,7 +196,7 @@ bt 16                              # 修复面板
                     <h2>八、总结</h2>
                     <p>宝塔插件版 OpenClaw 提供了一个宿主机安装的面板管理方案，但安装后需要解决：</p>
                     <ul>
-                        <li><strong>左侧菜单不显示</strong>：清除面板缓存即可恢复</li>
+                        
                         <li><strong>进程管理升级</strong>：从裸进程转到 PM2，获得自动重启和日志管理能力</li>
                         <li><strong>更新按钮修复</strong>：通过 PM2 ecosystem 显式设置环境变量，确保 npm update 可执行</li>
                         <li><strong>Telegram 通道</strong>：配置代理环境变量，解决国内服务器无法连接 API 的问题</li>
