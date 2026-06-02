@@ -207,8 +207,7 @@ location = /qx {
                     <pre>{`# 策略组：自动选择可用节点
 [policy]
 available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, \\
-  check-interval=300, alive-checking=true, \\
-  img-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png`}</pre>
+  check-interval=300, alive-checking=true`}</pre>
 
                     <p>参数说明：</p>
                     <ul>
@@ -223,8 +222,7 @@ available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, \\
                     <p>如果需要<strong>手动切换</strong>节点，将策略组类型改为 <code>static</code>：</p>
 
                     <pre>{`[policy]
-static=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, \\
-  img-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png`}</pre>
+static=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$`}</pre>
 
                     <h3>5.3 配置分流规则</h3>
                     <p>HomeNet 只应路由内网流量，其他流量走用户原有的科学上网节点。在 QX 配置中添加分流规则：</p>
@@ -254,8 +252,7 @@ https://substore.example.com/qx, tag=HomeNet, \\
 [policy]
 # 自动切换（Fast 优先，CF 兜底）
 available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, \\
-  check-interval=300, alive-checking=true, \\
-  img-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png
+  check-interval=300, alive-checking=true
 
 [filter_local]
 # 内网流量走 HomeNet
