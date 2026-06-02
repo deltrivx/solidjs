@@ -206,15 +206,13 @@ location = /qx {
 
                     <pre>{`# 策略组：自动选择可用节点
 [policy]
-available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, \\
-  check-interval=300, alive-checking=true`}</pre>
+available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, img-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png`}</pre>
 
                     <p>参数说明：</p>
                     <ul>
                         <li><code>available</code>：自动选择策略组，优先选取第一个可用节点</li>
                         <li><code>server-tag-regex=^HomeNet-(Fast|CF)$</code>：匹配 HomeNet-Fast 和 HomeNet-CF</li>
-                        <li><code>check-interval=300</code>：每 300 秒检测一次节点存活</li>
-                        <li><code>alive-checking=true</code>：启用存活检测</li>
+                        <li><code>img-url</code>：设置策略组图标</li>
                     </ul>
 
                     <p><strong>注意</strong>：<code>available</code> 策略组按订阅中的节点顺序选择，因此订阅中 <strong>HomeNet-Fast 必须排在 HomeNet-CF 前面</strong>，否则会优先走 Cloudflare 中继。</p>
@@ -222,7 +220,7 @@ available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, \\
                     <p>如果需要<strong>手动切换</strong>节点，将策略组类型改为 <code>static</code>：</p>
 
                     <pre>{`[policy]
-static=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$`}</pre>
+static=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, img-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png`}</pre>
 
                     <h3>5.3 配置分流规则</h3>
                     <p>HomeNet 只应路由内网流量，其他流量走用户原有的科学上网节点。在 QX 配置中添加分流规则：</p>
@@ -251,8 +249,7 @@ https://substore.example.com/qx, tag=HomeNet, \\
 
 [policy]
 # 自动切换（Fast 优先，CF 兜底）
-available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, \\
-  check-interval=300, alive-checking=true
+available=HomeNet, server-tag-regex=^HomeNet-(Fast|CF)$, img-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png
 
 [filter_local]
 # 内网流量走 HomeNet
@@ -269,7 +266,6 @@ ip-cidr, 192.168.31.0/24, HomeNet, no-resolve
                     <ul>
                         <li>按订阅中节点顺序依次检测可用性</li>
                         <li>选择第一个可用的节点</li>
-                        <li>每 <code>check-interval</code> 秒重新检测一次</li>
                         <li>当当前节点不可用时，自动切换到下一个可用节点</li>
                     </ul>
 
