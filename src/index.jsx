@@ -12,6 +12,7 @@ import ArticleDualStack from './pages/articles/ArticleDualStack';
 import ArticleHomenetQX from './pages/articles/ArticleHomenetQX';
 import ArticleFnosOpenClawStore from './pages/articles/ArticleFnosOpenClawStore';
 import ArticleFnosIgpuTemp from './pages/articles/ArticleFnosIgpuTemp';
+import ArticleOpenclawBaota from './pages/articles/ArticleOpenclawBaota';
 import ArticleMemoryEmbedOllama from './pages/articles/ArticleMemoryEmbedOllama';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
@@ -89,6 +90,12 @@ render(
           )} />
           <Route path="/login" component={() => (
             <>
+          <Route path="/article/openclaw-baota-pm2" component={() => (
+            <>
+              <Title>Kris | 宝塔插件 OpenClaw 部署实录</Title>
+              <ArticleOpenclawBaota />
+            </>
+          )} />
               <Title>Kris | 登录</Title>
               <Login />
             </>
