@@ -88,14 +88,14 @@ render(
               <ArticleFnosIgpuTemp />
             </>
           )} />
-          <Route path="/login" component={() => (
-            <>
           <Route path="/article/openclaw-baota-pm2" component={() => (
             <>
               <Title>Kris | 宝塔插件 OpenClaw 部署实录</Title>
               <ArticleOpenclawBaota />
             </>
           )} />
+          <Route path="/login" component={() => (
+            <>
               <Title>Kris | 登录</Title>
               <Login />
             </>
