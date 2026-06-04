@@ -1,4 +1,4 @@
-name: Deploy
+name: Build and Deploy
 
 on:
   push:
@@ -8,22 +8,34 @@ permissions:
   contents: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
-      - name: Ensure CNAME
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Copy CNAME to docs/
         run: echo "www.deltrivx.com" > docs/CNAME
 
-      - name: Commit CNAME
+      - name: Commit built docs/ to main branch
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add docs/CNAME
+          git add docs/
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: update CNAME [skip ci]"
+            git commit -m "chore: update built docs [skip ci]"
             git push
           fi
+

@@ -1,21 +1,50 @@
-# DeltrivX · 赛博空间
+# DeltrivX 个人主页 (SolidJS 版)
 
-> 赛博朋克风格个人主页 | Cyberpunk-themed personal homepage
+这个项目已经从传统的静态 HTML 迁移到了现代的 **SolidJS** 框架，并集成了多种炫酷的交互特效。
 
-穿越数字与现实的边界，构建未来基础设施。
+## 🚀 核心特性
+- **框架**: SolidJS + @solidjs/router (v0.14)
+- **打包工具**: Vite
+- **交互特效**:
+  - 鼠标跟随聚光灯背景
+  - 卡片 3D 物理倾斜效果 (Tilt Effect)
+  - 标题流光霓虹动画
+  - 页面平滑过渡 (View Transitions API)
+- **部署优化**:
+  - 自动路由重定向 (via .htaccess & index.php)
+  - Hash 路由模式，兼容所有服务器环境
 
-## 技术栈
+## 📁 目录结构
+- `src/`: 核心源代码目录
+  - `components/`: 可复用的页面组件
+  - `pages/`: 独立视图/页面组件
+  - `data/`: 静态数据
+  - `utils/`: 动画及工具函数
+  - `css/style.css`: 全局样式表
+  - `App.jsx` & `index.jsx`: 根组件与应用入口
+- `dist/`: 打包生成的正式上线文件
+- `vite.config.js`: 构建配置文件
 
-- HTML5 / CSS3 (CSS Variables, Grid, Flexbox, Keyframe Animations)
-- JavaScript (ES6+) — DOM manipulation, Intersection Observer, Particles
-- Cloudflare Tunnel + GitHub Pages
-- Fonts: Orbitron, Rajdhani (Google Fonts)
-- Icons: Font Awesome
+## 🛠️ 开发与构建
+### 安装依赖
+```bash
+npm install
+```
 
-## 在线地址
+### 开发环境预览
+```bash
+npm run dev
+```
 
-[https://www.deltrivx.com](https://www.deltrivx.com)
+### 生产打包
+```bash
+npm run build
+```
+
+### 生产环境预览
+```bash
+npm run serve
+```
 
 ---
-
-Built on the digital frontier. 🌐
+*Made with ❤️ by DeltrivX*
