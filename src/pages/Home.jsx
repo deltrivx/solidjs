@@ -70,8 +70,8 @@ export default function Home() {
                     </A>
                     <A href="/articles" class="nav-card reveal tilt-card">
                         <div class="nav-card-icon">📝</div>
-                        <h3>文章</h3>
-                        <p>阅读我的技术分享</p>
+                        <h3>实战</h3>
+                        <p>查看我的技术实战</p>
                     </A>
                 </div>
             </section>
