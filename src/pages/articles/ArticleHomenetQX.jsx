@@ -28,6 +28,9 @@ export default function ArticleHomenetQX() {
                     </div>
                 </div>
                 <div class="article-content">
+                    <blockquote>
+                        <p>更新提示：本文记录的是 HomeNet 初版双节点方案。若需要流量显示修复、SubStore userinfo 统计与 ss-direct 8443 独立链路，请阅读 <A href="/article/substore-homenet-traffic-8443">SubStore HomeNet 优化实战</A>。</p>
+                    </blockquote>
 
                     <h2>一、方案概述</h2>
                     <p>异地访问家中内网，常见方案有 Tailscale、ZeroTier、frp 等。本文另辟蹊径——利用 Cloudflare Tunnel 的天然双栈穿透能力，结合 Shadowsocks over WebSocket Secure（WSS）协议，在 iOS Quantumult X 上实现双节点自动切换，让手机无论身处何地都能像在家一样访问 192.168.31.0/24 内网。</p>
