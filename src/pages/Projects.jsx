@@ -18,13 +18,6 @@ export default function Projects() {
             links: [{ url: "https://fnos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
         },
         {
-            icon: "🧱",
-            name: "宝塔面板",
-            desc: "服务器运维管理面板，可视化网站、数据库、FTP 管理。",
-            tech: ["面板", "运维"],
-            links: [{ url: "https://baota.deltrivx.com/btpanel", label: "🌐 公网" }, { url: "http://192.168.31.5:19190/btpanel", label: "🔗 内网" }],
-        },
-        {
             icon: "🏠",
             name: "HomeAssistant",
             desc: "智能家居控制系统，集成灯光、传感器、自动化场景等设备。",
@@ -39,26 +32,19 @@ export default function Projects() {
             links: [{ url: "https://fntv.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8005", label: "🔗 内网" }],
         },
         {
-            icon: "🔱",
-            name: "Hermes",
-            desc: "多平台消息集成网关，支持 QQBot、Telegram 等渠道统一接入。",
-            tech: ["Gateway", "消息集成"],
-            links: [{ url: "https://hermes.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.5:8787", label: "🔗 内网" }],
-        },
-        {
             // === 新增 Sub2API 项目卡片 ===
             icon: "🌀",
             name: "Sub2API",
             desc: "AI API 网关平台，支持订阅转换与多模型路由。",
             tech: ["API", "AI", "Gateway"],
-            links: [{ url: "https://sub2api.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.5:8080", label: "🔗 内网" }],
+            links: [{ url: "https://sub2api.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8008", label: "🔗 内网" }],
         },
         {
             icon: "🔗",
             name: "SubStore",
             desc: "订阅管理与转换工具，支持多协议节点聚合与规则处理。",
             tech: ["订阅", "代理", "工具"],
-            links: [{ url: "https://substore.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.5:3000", label: "🔗 内网" }],
+            links: [{ url: "https://substore.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:3100", label: "🔗 内网" }],
         },
         {
                         // === 新增 iStoreOS 项目卡片 ===
@@ -115,7 +101,7 @@ export default function Projects() {
             name: "PanSou 搜盘引擎",
             desc: "网盘资源搜索引擎，聚合多方盘源。",
             tech: ["搜索", "网盘"],
-            links: [{ url: "https://pansou.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8880", label: "🔗 内网" }],
+            links: [{ url: "https://pansou.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:3080", label: "🔗 内网" }],
         },
         {
             icon: "📥",
@@ -187,13 +173,6 @@ export default function Projects() {
             desc: "MDCx 媒体下载工具 GUI 版，基于 VNC 远程桌面操作。",
             tech: ["媒体", "下载", "GUI"],
             links: [{ url: "http://192.168.31.2:5800", label: "🔗 内网" }],
-        },
-        {
-            icon: "☁️",
-            name: "Cloud Saver 云盘转存",
-            desc: "115 网盘与阿里云盘自动转存工具。",
-            tech: ["网盘", "转存", "自动化"],
-            links: [{ url: "http://192.168.31.2:8032", label: "🔗 内网" }],
         },
         // ===== 无链接 =====
         {
