@@ -10,6 +10,14 @@ export default function Articles() {
 
     const articles = [
         {
+            title: 'SubStore HomeNet 优化实战：流量显示修复与 ss-direct 8443 独立链路',
+            subtitle: 'SubStore · Quantumult X · Shadowsocks over WSS · Cloudflare Tunnel · Nginx 端口隔离',
+            date: '2026-06-12',
+            tags: ['SubStore', 'Quantumult X', 'Cloudflare', 'Nginx', 'HomeNet', 'WSS'],
+            summary: '完整记录 HomeNet 双节点优化：先修复 SubStore / Quantumult X 流量显示，再将 ss-direct 从 443 拆到 8443 独立 TLS 入口。文章全程域名脱敏，包含 Nginx、Node.js userinfo、QX 节点、gost 验证与回滚方案，新手可按步骤复刻。',
+            slug: 'substore-homenet-traffic-8443'
+        },
+        {
             title: 'OpenClaw 记忆优化实战：Ollama Embedding + memory-core 本地化部署',
             subtitle: 'Nomic Embed Text · FnOS Ollama 容器 · 多 OpenClaw 实例 provider 统一管理 · memory-core 语义搜索恢复',
             date: '2026-06-01',
