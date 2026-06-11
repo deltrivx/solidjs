@@ -13,6 +13,7 @@ import ArticleHomenetQX from './pages/articles/ArticleHomenetQX';
 import ArticleFnosOpenClawStore from './pages/articles/ArticleFnosOpenClawStore';
 import ArticleFnosIgpuTemp from './pages/articles/ArticleFnosIgpuTemp';
 import ArticleMemoryEmbedOllama from './pages/articles/ArticleMemoryEmbedOllama';
+import ArticleSubstoreHomenetTraffic8443 from './pages/articles/ArticleSubstoreHomenetTraffic8443';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import './css/style.css';
@@ -73,6 +74,12 @@ render(
             <>
               <Title>Kris | 双栈域名体系完全指南</Title>
               <ArticleDualStack />
+            </>
+          )} />
+          <Route path="/article/substore-homenet-traffic-8443" component={() => (
+            <>
+              <Title>Kris | SubStore HomeNet 优化实战：流量显示修复与 8443 独立链路</Title>
+              <ArticleSubstoreHomenetTraffic8443 />
             </>
           )} />
           <Route path="/article/memory-embed-ollama" component={() => (
