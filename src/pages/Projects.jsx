@@ -147,7 +147,7 @@ export default function Projects() {
         },
         // ===== 仅内网 =====
         {
-            icon: "ð",
+            icon: "🌀",
             name: "Sub2API",
             desc: "AI API 网关平台，支持订阅转换与多模型路由。",
             tech: ["API", "AI", "Gateway"],
