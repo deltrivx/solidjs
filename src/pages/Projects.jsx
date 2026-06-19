@@ -48,13 +48,6 @@ export default function Projects() {
             links: [{ url: "https://istoreos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:80", label: "🔗 内网" }],
         },
         {
-            icon: "🔱",
-            name: "Hermes",
-            desc: "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
-            tech: ["Hermes", "AI Agent", "Gateway"],
-            links: [{ url: "https://hermes.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:9119", label: "🔗 内网" }],
-        },
-        {
             icon: "🌐",
             name: "Chromium",
             desc: "远程 Chromium 浏览器实例，支持自动化脚本和 Web 测试。",
@@ -121,6 +114,13 @@ export default function Projects() {
             links: [{ url: "https://migu.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:1234", label: "🔗 内网" }],
         },
         // ===== 仅内网 =====
+        {
+            icon: "🔱",
+            name: "Hermes",
+            desc: "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
+            tech: ["Hermes", "AI Agent", "Gateway"],
+            links: [{ url: "http://192.168.31.2:9119", label: "🔗 内网" }],
+        },
         {
             icon: "🌀",
             name: "Sub2API",
