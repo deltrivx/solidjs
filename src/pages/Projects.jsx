@@ -45,7 +45,14 @@ export default function Projects() {
             name: "iStoreOS",
             desc: "软路由与家庭网络管理系统，承载双网接入、插件扩展与局域网服务。",
             tech: ["iStoreOS", "软路由", "网络"],
-            links: [{ url: "https://istoreos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.10:80", label: "🔗 内网" }],
+            links: [{ url: "https://istoreos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:80", label: "🔗 内网" }],
+        },
+        {
+            icon: "🛜",
+            name: "Hermes 双网卡片",
+            desc: "Hermes 双网访问入口，提供公网与内网双通道接入。",
+            tech: ["Hermes", "双网", "网关"],
+            links: [{ url: "https://hermes.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:9119", label: "🔗 内网" }],
         },
         {
             icon: "🌐",
