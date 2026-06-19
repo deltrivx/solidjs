@@ -50,7 +50,7 @@ export default function Projects() {
         {
             icon: "🔱",
             name: "Hermes",
-            desc: "双网入口服务，统一承接公网与内网访问。",
+            desc: "Hermes 双网访问入口，提供公网与内网双通道接入。",
             tech: ["Hermes", "双网", "网关"],
             links: [{ url: "https://hermes.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:9119", label: "🔗 内网" }],
         },
