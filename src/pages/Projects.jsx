@@ -114,12 +114,13 @@ export default function Projects() {
             links: [{ url: "https://migu.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:1234", label: "🔗 内网" }],
         },
         // ===== 仅内网 =====
+
         {
             icon: "🤖",
             name: "OpenClaw AI",
             desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
             tech: ["AI Agent", "LLM"],
-            links: [{ url: "http://openclaw.deltrivx.com/chat?token=5c2e9a71d4f8b3601a7c5e2d9b4f6a83c0d1e7b25f9a4c61", label: "🌐 公网" }, { url: "http://192.168.31.2:18789/chat?tooken=5c2e9a71d4f8b3601a7c5e2d9b4f6a83c0d1e7b25f9a4c61", label: "🔗 内网" }],
+            links: [{ url: "http://192.168.31.2:18789/chat?tooken=5c2e9a71d4f8b3601a7c5e2d9b4f6a83c0d1e7b25f9a4c61", label: "🔗 内网" }],
         },
 
         {
