@@ -50,8 +50,8 @@ export default function Projects() {
         {
             icon: "🔱",
             name: "Hermes",
-            desc: "双网访问入口，公网与内网双通道反向代理接入。",
-            tech: ["Hermes", "反向代理", "网关"],
+            desc: "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
+            tech: ["Hermes", "AI Agent", "Gateway"],
             links: [{ url: "https://hermes.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:9119", label: "🔗 内网" }],
         },
         {
