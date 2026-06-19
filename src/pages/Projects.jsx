@@ -48,13 +48,6 @@ export default function Projects() {
             links: [{ url: "https://istoreos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:80", label: "🔗 内网" }],
         },
         {
-            icon: "🤖",
-            name: "OpenClaw AI",
-            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
-            tech: ["AI Agent", "LLM"],
-            links: [{ url: "http://openclaw.deltrivx.com/chat?token=5c2e9a…4c61", label: "🌐 公网" }, { url: "http://192.168.31.2/chat?token=5c2e9a…4c61", label: "🔗 内网" }],
-        },
-        {
             icon: "🔱",
             name: "Hermes",
             desc: "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
@@ -199,6 +192,13 @@ export default function Projects() {
             name: "KV Rocks 缓存",
             desc: "Apache Kvrocks 高性能键值存储，兼容 Redis 协议。",
             tech: ["Kvrocks", "Redis"],
+            links: [],
+        },
+        {
+            icon: "🤖",
+            name: "OpenClaw AI",
+            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
+            tech: ["AI Agent", "LLM"],
             links: [],
         },
 
