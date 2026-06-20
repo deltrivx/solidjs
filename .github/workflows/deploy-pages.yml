@@ -24,8 +24,6 @@ jobs:
           node-version: "24"
       - run: npm ci
       - run: npm run build
-      - run: cp index.html docs/index.html
-      - run: cp -r assets docs/ || true
       - run: echo "www.deltrivx.com" > docs/CNAME
       - uses: actions/upload-pages-artifact@v3
         with:
