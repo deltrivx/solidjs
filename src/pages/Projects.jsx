@@ -10,13 +10,7 @@ export default function Projects() {
 
     const projects = [
         // ===== 双链接 (公网 + 内网) =====
-        {
-            icon: "🔗",
-            name: "SubStore",
-            desc: "订阅管理与转换工具，支持多协议节点聚合与规则处理。",
-            tech: ["订阅", "代理", "工具"],
-            links: [],
-        },
+
         {
             icon: "🐮",
             name: "飞牛系统",
@@ -197,6 +191,13 @@ export default function Projects() {
             links: [{ url: "http://192.168.31.2:5800", label: "🔗 内网" }],
         },
         // ===== 无链接 =====
+        {
+            icon: "🔗",
+            name: "SubStore",
+            desc: "订阅管理与转换工具，支持多协议节点聚合与规则处理。",
+            tech: ["订阅", "代理", "工具"],
+            links: [],
+        },
         {
             icon: "⚡",
             name: "KV Rocks 缓存",
