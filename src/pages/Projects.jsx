@@ -37,7 +37,7 @@ export default function Projects() {
             name: "SubStore",
             desc: "订阅管理与转换工具，支持多协议节点聚合与规则处理。",
             tech: ["订阅", "代理", "工具"],
-            links: [{ url: "https://substore.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:3100", label: "🔗 内网" }],
+            links: [{ url: "https://substore.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:3190", label: "🔗 内网" }],
         },
         {
                         // === 新增 iStoreOS 项目卡片 ===
