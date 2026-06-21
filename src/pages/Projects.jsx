@@ -16,7 +16,7 @@ export default function Projects() {
             name: "飞牛系统",
             desc: "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
             tech: ["FnOS", "NAS"],
-            links: [{ url: "https://fnos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
+            links: [{ url: "https://fnos.net/deltrivx", label: "🌐 公网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
         },
         {
             icon: "🏠",
