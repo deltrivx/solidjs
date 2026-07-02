@@ -206,7 +206,7 @@ export default function Projects() {
             links: [],
         },
         {
-            icon: "🤖",
+            icon: "🦙",
             name: "Ollama",
             desc: "本地大语言模型推理引擎，支持多种开源模型的快速部署与调用。",
             tech: ["LLM", "推理"],
