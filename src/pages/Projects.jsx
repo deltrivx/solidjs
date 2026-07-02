@@ -33,7 +33,7 @@ export default function Projects() {
             links: [{ url: "https://fntv.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8005", label: "🔗 内网" }],
         },
         {
-            icon: "🔄",
+            icon: "📦",
             name: "SubStore",
             desc: "订阅管理与转换工具，支持多协议节点聚合与规则处理。",
             tech: ["订阅", "代理", "工具"],
@@ -154,7 +154,7 @@ export default function Projects() {
             links: [{ url: "http://192.168.31.2:8080", label: "🔗 内网" }],
         },
         {
-            icon: "📡",
+            icon: "🧲",
             name: "Transmission",
             desc: "轻量 BT 下载客户端，资源占用低，适合 7x24 运行。",
             tech: ["Transmission", "BT"],
@@ -213,7 +213,7 @@ export default function Projects() {
             links: [],
         },
         {
-            icon: "⚡",
+            icon: "💾",
             name: "KV Rocks 缓存",
             desc: "Apache Kvrocks 高性能键值存储，兼容 Redis 协议。",
             tech: ["Kvrocks", "Redis"],
@@ -242,7 +242,7 @@ export default function Projects() {
             links: [],
         },
         {
-            icon: "🌐",
+            icon: "🔀",
             name: "Nginx 反向代理",
             desc: "Web 服务反向代理与负载均衡网关。",
             tech: ["Nginx", "代理"],
