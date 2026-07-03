@@ -9,10 +9,24 @@ export default function Navbar() {
 
     onMount(() => {
         let lastScrollY = window.scrollY;
+
         const handleScroll = () => {
             const currentScrollY = Math.max(0, window.scrollY);
-            if (currentScrollY > lastScrollY && currentScrollY > 100) navRef.classList.add('hidden');
-            else navRef.classList.remove('hidden');
+
+            // 下滑隐藏导航
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                navRef.classList.add('hidden');
+            } else {
+                navRef.classList.remove('hidden');
+            }
+
+            // 滚动超过 50px 时加 scrolled 样式
+            if (currentScrollY > 50) {
+                navRef.classList.add('scrolled');
+            } else {
+                navRef.classList.remove('scrolled');
+            }
+
             lastScrollY = currentScrollY;
         };
         window.addEventListener('scroll', handleScroll);
