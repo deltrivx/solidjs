@@ -2,577 +2,253 @@ import { onMount } from "solid-js";
 import { initReveal, initTilt } from "../utils/animations";
 import ProtectedLink from "../components/ProtectedLink";
 
-const groups = [
-        {
-                "label": "💻 基础设施",
-                "items": [
-                        {
-                                "icon": "🐮",
-                                "name": "飞牛系统",
-                                "desc": "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
-                                "tech": [
-                                        "FnOS",
-                                        "NAS"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://fnos.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:5080",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "large"
-                        },
-                        {
-                                "icon": "🛜",
-                                "name": "iStoreOS",
-                                "desc": "软路由与家庭网络管理系统，承载双网接入、插件扩展与局域网服务。",
-                                "tech": [
-                                        "iStoreOS",
-                                        "软路由",
-                                        "网络"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://istoreos.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.10:80",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🏠",
-                                "name": "HomeAssistant",
-                                "desc": "智能家居控制系统，集成灯光、传感器、自动化场景等设备。",
-                                "tech": [
-                                        "IoT",
-                                        "智能家居"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://homeassistant.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:8123",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🌐",
-                                "name": "Chromium",
-                                "desc": "远程 Chromium 浏览器实例，支持自动化脚本和 Web 测试。",
-                                "tech": [
-                                        "Chromium",
-                                        "浏览器"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://chromium.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "https://192.168.31.2:3011",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        }
-                ]
-        },
-        {
-                "label": "🎬 影音娱乐",
-                "items": [
-                        {
-                                "icon": "🎬",
-                                "name": "飞牛影视",
-                                "desc": "FnOS 内置影视中心，支持在线观影与媒体管理。",
-                                "tech": [
-                                        "FnOS",
-                                        "影视"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://fntv.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:8005",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🎛️",
-                                "name": "Emby 影音中心",
-                                "desc": "全平台媒体管理与串流服务器，整合影视资源库。",
-                                "tech": [
-                                        "Emby Server",
-                                        "NAS"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://emby.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:8096",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "large"
-                        },
-                        {
-                                "icon": "🎯",
-                                "name": "MoviePilot",
-                                "desc": "自动化影视资源订阅与下载管理，辅以豆瓣榜单同步。",
-                                "tech": [
-                                        "MoviePilot",
-                                        "自动化"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://moviepilot.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:3000",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🎵",
-                                "name": "网易云音乐解锁",
-                                "desc": "解锁网易云音乐海外/灰色歌曲限制，支持 SubStore 远程订阅。",
-                                "tech": [
-                                        "解锁",
-                                        "音乐"
-                                ],
-                                "links": [],
-                                "span": "small"
-                        }
-                ]
-        },
-        {
-                "label": "🤖 AI & 工具",
-                "items": [
-                        {
-                                "icon": "🧩",
-                                "name": "SubStore",
-                                "desc": "订阅管理与转换工具，支持多协议节点聚合与规则处理。",
-                                "tech": [
-                                        "订阅",
-                                        "代理",
-                                        "工具"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://substore.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:3100",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🤖",
-                                "name": "OpenClaw AI",
-                                "desc": "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
-                                "tech": [
-                                        "AI Agent",
-                                        "LLM"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:18789/chat?token=5c2e9a71d4f8b3601a7c5e2d9b4f6a83c0d1e7b25f9a4c61",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "large"
-                        },
-                        {
-                                "icon": "🌀",
-                                "name": "Sub2API",
-                                "desc": "AI API 网关平台，支持订阅转换与多模型路由。",
-                                "tech": [
-                                        "API",
-                                        "AI",
-                                        "Gateway"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:8008",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🔱",
-                                "name": "Hermes",
-                                "desc": "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
-                                "tech": [
-                                        "Hermes",
-                                        "AI Agent",
-                                        "Gateway"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:9119",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "📡",
-                                "name": "PanSou 搜盘引擎",
-                                "desc": "网盘资源搜索引擎，聚合多方盘源。",
-                                "tech": [
-                                        "搜索",
-                                        "网盘"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://pansou.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:3080",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🔗",
-                                "name": "OmniBox 综合工具",
-                                "desc": "多功能集成工具箱。",
-                                "tech": [
-                                        "工具",
-                                        "集成"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://omnibox.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:7023",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🔄",
-                                "name": "DDNS-GO",
-                                "desc": "自动更新域名解析记录，保障内网服务通过域名可达。",
-                                "tech": [
-                                        "DNS",
-                                        "自动运维"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://ddnsgo.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:9876",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🦙",
-                                "name": "Ollama",
-                                "desc": "本地大语言模型推理引擎，支持多种开源模型的快速部署与调用。",
-                                "tech": [
-                                        "LLM",
-                                        "推理"
-                                ],
-                                "links": [],
-                                "span": "small"
-                        }
-                ]
-        },
-        {
-                "label": "📥 下载工具",
-                "items": [
-                        {
-                                "icon": "🐻",
-                                "name": "Aria2",
-                                "desc": "轻量级命令行下载工具，支持 HTTP/HTTPS/BT/Metalink 协议。",
-                                "tech": [
-                                        "aria2",
-                                        "下载"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:6880",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "⚡",
-                                "name": "qBittorrent",
-                                "desc": "轻量级 BT/PT 下载客户端，功能完善，支持 WebUI 远程管理。",
-                                "tech": [
-                                        "qBittorrent",
-                                        "BT/PT"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:8080",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🧲",
-                                "name": "Transmission",
-                                "desc": "轻量 BT 下载客户端，资源占用低，适合 7x24 运行。",
-                                "tech": [
-                                        "Transmission",
-                                        "BT"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:9091",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🐧",
-                                "name": "Xunlei 迅雷远程",
-                                "desc": "远程迅雷下载服务，支持磁力链接与 BT 下载。",
-                                "tech": [
-                                        "下载",
-                                        "P2P"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:2345",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "📥",
-                                "name": "Telegram 下载器",
-                                "desc": "自动抓取 Telegram 频道的媒体文件并下载到本地存储。",
-                                "tech": [
-                                        "Telegram API",
-                                        "自动化"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:5000",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🎥",
-                                "name": "咪咕视频助手",
-                                "desc": "咪咕视频资源抓取与下载工具。",
-                                "tech": [
-                                        "视频",
-                                        "抓取"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://migu.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:1234",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "📺",
-                                "name": "MDC 媒体下载中心",
-                                "desc": "多平台媒体资源下载与聚合中心。",
-                                "tech": [
-                                        "媒体",
-                                        "下载"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:9208",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🖥️",
-                                "name": "MDCx 图形界面",
-                                "desc": "MDCx 媒体下载工具 GUI 版，基于 VNC 远程桌面操作。",
-                                "tech": [
-                                        "媒体",
-                                        "下载",
-                                        "GUI"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:5800",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        }
-                ]
-        },
-        {
-                "label": "🛠️ 运维 & 存储",
-                "items": [
-                        {
-                                "icon": "📊",
-                                "name": "Portainer 容器管理",
-                                "desc": "Docker 容器集群图形化管理面板。",
-                                "tech": [
-                                        "Docker",
-                                        "管理"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://portainer.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:9000",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "📂",
-                                "name": "OpenList 目录索引",
-                                "desc": "轻量级文件目录索引与分享系统。",
-                                "tech": [
-                                        "文件管理",
-                                        "分享"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "https://openlist.deltrivx.com",
-                                                "label": "🌐 公网"
-                                        },
-                                        {
-                                                "url": "http://192.168.31.2:5244",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🔐",
-                                "name": "AllInSSL 证书管理",
-                                "desc": "SSL 证书全生命周期管理工具。",
-                                "tech": [
-                                        "SSL",
-                                        "证书"
-                                ],
-                                "links": [
-                                        {
-                                                "url": "http://192.168.31.2:8888/allinssl",
-                                                "label": "🔗 内网"
-                                        }
-                                ],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🗄️",
-                                "name": "PostgreSQL 数据库",
-                                "desc": "PostgreSQL 17 关系型数据库，为各服务提供可靠的数据存储。",
-                                "tech": [
-                                        "PostgreSQL",
-                                        "数据库"
-                                ],
-                                "links": [],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "📦",
-                                "name": "Redis 缓存",
-                                "desc": "高性能内存缓存数据库，加速服务响应。",
-                                "tech": [
-                                        "Redis",
-                                        "缓存"
-                                ],
-                                "links": [],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "💾",
-                                "name": "KV Rocks 缓存",
-                                "desc": "Apache Kvrocks 高性能键值存储，兼容 Redis 协议。",
-                                "tech": [
-                                        "Kvrocks",
-                                        "Redis"
-                                ],
-                                "links": [],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🛡️",
-                                "name": "FlareSolverr",
-                                "desc": "Cloudflare 挑战解析代理，为自动化工具提供免验证访问。",
-                                "tech": [
-                                        "代理",
-                                        "反爬"
-                                ],
-                                "links": [],
-                                "span": "small"
-                        },
-                        {
-                                "icon": "🔀",
-                                "name": "Nginx 反向代理",
-                                "desc": "Web 服务反向代理与负载均衡网关。",
-                                "tech": [
-                                        "Nginx",
-                                        "代理"
-                                ],
-                                "links": [],
-                                "span": "small"
-                        }
-                ]
-        }
-];
-
 export default function Projects() {
     onMount(() => {
         initReveal();
         initTilt();
     });
+
+    const projects = [
+        // ===== 双链接 (公网 + 内网) =====
+
+        {
+            icon: "🐮",
+            name: "飞牛系统",
+            desc: "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
+            tech: ["FnOS", "NAS"],
+            links: [{ url: "https://fnos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
+        },
+        {
+            icon: "🏠",
+            name: "HomeAssistant",
+            desc: "智能家居控制系统，集成灯光、传感器、自动化场景等设备。",
+            tech: ["IoT", "智能家居"],
+            links: [{ url: "https://homeassistant.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8123", label: "🔗 内网" }],
+        },
+        {
+            icon: "🎬",
+            name: "飞牛影视",
+            desc: "FnOS 内置影视中心，支持在线观影与媒体管理。",
+            tech: ["FnOS", "影视"],
+            links: [{ url: "https://fntv.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8005", label: "🔗 内网" }],
+        },
+        {
+            icon: "🧩",
+            name: "SubStore",
+            desc: "订阅管理与转换工具，支持多协议节点聚合与规则处理。",
+            tech: ["订阅", "代理", "工具"],
+            links: [{ url: "https://substore.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:3100", label: "🔗 内网" }],
+        },
+
+
+        {
+                        // === 新增 iStoreOS 项目卡片 ===
+            icon: "🛜",
+            name: "iStoreOS",
+            desc: "软路由与家庭网络管理系统，承载双网接入、插件扩展与局域网服务。",
+            tech: ["iStoreOS", "软路由", "网络"],
+            links: [{ url: "https://istoreos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.10:80", label: "🔗 内网" }],
+        },
+        {
+            icon: "🌐",
+            name: "Chromium",
+            desc: "远程 Chromium 浏览器实例，支持自动化脚本和 Web 测试。",
+            tech: ["Chromium", "浏览器"],
+            links: [{ url: "https://chromium.deltrivx.com", label: "🌐 公网" }, { url: "https://192.168.31.2:3011", label: "🔗 内网" }],
+        },
+
+        {
+            icon: "🎛️",
+            name: "Emby 影音中心",
+            desc: "全平台媒体管理与串流服务器，整合影视资源库。",
+            tech: ["Emby Server", "NAS"],
+            links: [{ url: "https://emby.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8096", label: "🔗 内网" }],
+        },
+        {
+            icon: "🎯",
+            name: "MoviePilot",
+            desc: "自动化影视资源订阅与下载管理，辅以豆瓣榜单同步。",
+            tech: ["MoviePilot", "自动化"],
+            links: [{ url: "https://moviepilot.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:3000", label: "🔗 内网" }],
+        },
+        {
+            icon: "📡",
+            name: "PanSou 搜盘引擎",
+            desc: "网盘资源搜索引擎，聚合多方盘源。",
+            tech: ["搜索", "网盘"],
+            links: [{ url: "https://pansou.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:3080", label: "🔗 内网" }],
+        },
+
+        {
+            icon: "📊",
+            name: "Portainer 容器管理",
+            desc: "Docker 容器集群图形化管理面板。",
+            tech: ["Docker", "管理"],
+            links: [{ url: "https://portainer.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:9000", label: "🔗 内网" }],
+        },
+        {
+            icon: "🔄",
+            name: "DDNS-GO",
+            desc: "自动更新域名解析记录，保障内网服务通过域名可达。",
+            tech: ["DNS", "自动运维"],
+            links: [{ url: "https://ddnsgo.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:9876", label: "🔗 内网" }],
+        },
+        {
+            icon: "📂",
+            name: "OpenList 目录索引",
+            desc: "轻量级文件目录索引与分享系统。",
+            tech: ["文件管理", "分享"],
+            links: [{ url: "https://openlist.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5244", label: "🔗 内网" }],
+        },
+
+        {
+            icon: "🔗",
+            name: "OmniBox 综合工具",
+            desc: "多功能集成工具箱。",
+            tech: ["工具", "集成"],
+            links: [{ url: "https://omnibox.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:7023", label: "🔗 内网" }],
+        },
+        {
+            icon: "🎥",
+            name: "咪咕视频助手",
+            desc: "咪咕视频资源抓取与下载工具。",
+            tech: ["视频", "抓取"],
+            links: [{ url: "https://migu.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:1234", label: "🔗 内网" }],
+        },
+        // ===== 仅内网 =====
+
+        {
+            icon: "🤖",
+            name: "OpenClaw AI",
+            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
+            tech: ["AI Agent", "LLM"],
+            links: [{ url: "http://192.168.31.2:18789/chat?token=5c2e9a71d4f8b3601a7c5e2d9b4f6a83c0d1e7b25f9a4c61", label: "🔗 内网" }],
+        },
+
+        {
+            icon: "🔱",
+            name: "Hermes",
+            desc: "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
+            tech: ["Hermes", "AI Agent", "Gateway"],
+            links: [{ url: "http://192.168.31.2:9119", label: "🔗 内网" }],
+        },
+        {
+            icon: "🌀",
+            name: "Sub2API",
+            desc: "AI API 网关平台，支持订阅转换与多模型路由。",
+            tech: ["API", "AI", "Gateway"],
+            links: [{ url: "http://192.168.31.2:8008", label: "🔗 内网" }],
+        },
+        {
+            icon: "🐻",
+            name: "Aria2",
+            desc: "轻量级命令行下载工具，支持 HTTP/HTTPS/BT/Metalink 协议，搭配 AriaNg WebUI 管理。",
+            tech: ["aria2", "下载"],
+            links: [{ url: "http://192.168.31.2:6880", label: "🔗 内网" }],
+        },
+        {
+            icon: "⚡",
+            name: "qBittorrent",
+            desc: "轻量级 BT/PT 下载客户端，功能完善，支持 WebUI 远程管理。",
+            tech: ["qBittorrent", "BT/PT"],
+            links: [{ url: "http://192.168.31.2:8080", label: "🔗 内网" }],
+        },
+        {
+            icon: "🧲",
+            name: "Transmission",
+            desc: "轻量 BT 下载客户端，资源占用低，适合 7x24 运行。",
+            tech: ["Transmission", "BT"],
+            links: [{ url: "http://192.168.31.2:9091", label: "🔗 内网" }],
+        },
+        {
+            icon: "🐧",
+            name: "Xunlei 迅雷远程",
+            desc: "远程迅雷下载服务，支持磁力链接与 BT 下载。",
+            tech: ["下载", "P2P"],
+            links: [{ url: "http://192.168.31.2:2345", label: "🔗 内网" }],
+        },
+        {
+            icon: "📥",
+            name: "Telegram 下载器",
+            desc: "自动抓取 Telegram 频道的媒体文件并下载到本地存储。",
+            tech: ["Telegram API", "自动化"],
+            links: [{ url: "http://192.168.31.2:5000", label: "🔗 内网" }],
+        },
+
+
+        {
+            icon: "📺",
+            name: "MDC 媒体下载中心",
+            desc: "多平台媒体资源下载与聚合中心。",
+            tech: ["媒体", "下载"],
+            links: [{ url: "http://192.168.31.2:9208", label: "🔗 内网" }],
+        },
+        {
+            icon: "🔐",
+            name: "AllInSSL 证书管理",
+            desc: "SSL 证书全生命周期管理工具。",
+            tech: ["SSL", "证书"],
+            links: [{ url: "http://192.168.31.2:8888/allinssl", label: "🔗 内网" }],
+        },
+        {
+            icon: "🖥️",
+            name: "MDCx 图形界面",
+            desc: "MDCx 媒体下载工具 GUI 版，基于 VNC 远程桌面操作。",
+            tech: ["媒体", "下载", "GUI"],
+            links: [{ url: "http://192.168.31.2:5800", label: "🔗 内网" }],
+        },
+        // ===== 无链接 =====
+        {
+            icon: "🎵",
+            name: "网易云音乐解锁",
+            desc: "解锁网易云音乐海外/灰色歌曲限制，支持 SubStore 远程订阅。",
+            tech: ["解锁", "音乐"],
+            links: [],
+        },
+        {
+            icon: "🦙",
+            name: "Ollama",
+            desc: "本地大语言模型推理引擎，支持多种开源模型的快速部署与调用。",
+            tech: ["LLM", "推理"],
+            links: [],
+        },
+        {
+            icon: "💾",
+            name: "KV Rocks 缓存",
+            desc: "Apache Kvrocks 高性能键值存储，兼容 Redis 协议。",
+            tech: ["Kvrocks", "Redis"],
+            links: [],
+        },
+
+        {
+            icon: "🛡️",
+            name: "FlareSolverr",
+            desc: "Cloudflare 挑战解析代理，为自动化工具提供免验证访问。",
+            tech: ["代理", "反爬"],
+            links: [],
+        },
+        {
+            icon: "🗄️",
+            name: "PostgreSQL 数据库",
+            desc: "PostgreSQL 17 关系型数据库，为各服务提供可靠的数据存储。",
+            tech: ["PostgreSQL", "数据库"],
+            links: [],
+        },
+        {
+            icon: "📦",
+            name: "Redis 缓存",
+            desc: "高性能内存缓存数据库，加速服务响应。",
+            tech: ["Redis", "缓存"],
+            links: [],
+        },
+        {
+            icon: "🔀",
+            name: "Nginx 反向代理",
+            desc: "Web 服务反向代理与负载均衡网关。",
+            tech: ["Nginx", "代理"],
+            links: [],
+        },
+    ];
 
     return (
         <section id="projects">
@@ -580,29 +256,27 @@ export default function Projects() {
                 <h2><span class="gradient-text">精选项目</span></h2>
                 <p>一些我引以为豪的作品</p>
             </div>
-            {groups.map((g, gi) => (
-                <div class="project-group reveal">
-                    <h3 class="group-label">{g.label}</h3>
-                    <div class="bento-grid">
-                        {g.items.map((p, i) => (
-                            <div class={`bento-card ${p.span === "large" ? "bento-large" : "bento-small"}`} style={{ animationDelay: (gi * 0.15 + i * 0.05) + "s" }}>
-                                <div class="bento-card-inner">
-                                    <div class="bento-icon">{p.icon}</div>
-                                    <h4>{p.name}</h4>
-                                    <p>{p.desc}</p>
-                                    <div class="bento-tech">
-                                        {p.tech.map(t => <span class="tech-tag">{t}</span>)}
-                                    </div>
-                                    <div class="bento-links">
-                                        {p.links.map(lk => <ProtectedLink href={lk.url} label={lk.label} />)}
-                                    </div>
-                                </div>
+            <div class="projects-grid">
+                {projects.map((p, i) => (
+                    <div class="project-card reveal tilt-card" style={{ animationDelay: i * 0.1 + "s" }}>
+                        <div class="project-preview">
+                            <div class="project-preview-bg" style={{ fontSize: "3rem", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                                {p.icon}
                             </div>
-                        ))}
+                        </div>
+                        <div class="project-info">
+                            <h3>{p.name}</h3>
+                            <p>{p.desc}</p>
+                            <div class="project-tech">
+                                {p.tech.map(t => <span class="tech-tag">{t}</span>)}
+                            </div>
+                            <div class="project-links">
+                                {p.links.map(lk => <ProtectedLink href={lk.url} label={lk.label} />)}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </section>
     );
 }
-
