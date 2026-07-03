@@ -52,9 +52,16 @@
             background: rgba(10, 10, 15, 0.7);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, padding 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
         }
         nav.hidden { transform: translateY(-100%); }
+        nav.scrolled {
+            padding: 0.7rem 3rem;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(30px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-bottom-color: rgba(108, 92, 231, 0.3);
+        }
 
         .logo {
             font-size: 1.5rem; font-weight: 800;
