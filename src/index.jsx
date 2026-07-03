@@ -1,4 +1,5 @@
-import { render, lazy, Suspense } from 'solid-js/web';
+import { render } from 'solid-js/web';
+import { lazy, Suspense } from 'solid-js';
 import { HashRouter, Route } from '@solidjs/router';
 import { MetaProvider, Title, Meta } from '@solidjs/meta';
 import App from './App';
