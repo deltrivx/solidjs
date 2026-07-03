@@ -1,111 +1,63 @@
-import { render } from 'solid-js/web';
+import { render, lazy, Suspense } from 'solid-js/web';
 import { HashRouter, Route } from '@solidjs/router';
 import { MetaProvider, Title, Meta } from '@solidjs/meta';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
-import Home from './pages/Home';
-import About from './pages/About';
-import Skills from './pages/Skills';
-import Projects from './pages/Projects';
-import Articles from './pages/Articles';
-import ArticleDualStack from './pages/articles/ArticleDualStack';
-import ArticleHomenetQX from './pages/articles/ArticleHomenetQX';
-import ArticleFnosOpenClawStore from './pages/articles/ArticleFnosOpenClawStore';
-import ArticleFnosIgpuTemp from './pages/articles/ArticleFnosIgpuTemp';
-import ArticleMemoryEmbedOllama from './pages/articles/ArticleMemoryEmbedOllama';
-import ArticleSubstoreHomenetTraffic8443 from './pages/articles/ArticleSubstoreHomenetTraffic8443';
-import Login from './pages/Login';
-import NotFound from './pages/NotFound';
+
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Skills = lazy(() => import('./pages/Skills'));
+const Projects = lazy(() => import('./pages/Projects'));
+const Articles = lazy(() => import('./pages/Articles'));
+const ArticleDualStack = lazy(() => import('./pages/articles/ArticleDualStack'));
+const ArticleHomenetQX = lazy(() => import('./pages/articles/ArticleHomenetQX'));
+const ArticleFnosOpenClawStore = lazy(() => import('./pages/articles/ArticleFnosOpenClawStore'));
+const ArticleFnosIgpuTemp = lazy(() => import('./pages/articles/ArticleFnosIgpuTemp'));
+const ArticleMemoryEmbedOllama = lazy(() => import('./pages/articles/ArticleMemoryEmbedOllama'));
+const ArticleSubstoreHomenetTraffic8443 = lazy(() => import('./pages/articles/ArticleSubstoreHomenetTraffic8443'));
+const Login = lazy(() => import('./pages/Login'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 import './css/style.css';
+
+function PageLoading() {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '60vh', color: 'var(--text-secondary)', fontSize: '1rem'
+    }}>
+      <span>加载中...</span>
+    </div>
+  );
+}
+
+function RouteWithMeta({ title, desc, Component }) {
+  return (
+    <Suspense fallback={<PageLoading />}>
+      <Title>{title}</Title>
+      <Meta name="description" content={desc} />
+      <Component />
+    </Suspense>
+  );
+}
 
 render(
   () => (
     <AuthProvider>
       <MetaProvider>
-        <HashRouter root={App} >
-          <Route path="/" component={() => (
-            <>
-              <Title>Kris | 个人主页</Title>
-              <Meta name="description" content="Kris - 全栈开发者、AI探索者、开源贡献者" />
-              <Home />
-            </>
-          )} />
-          <Route path="/about" component={() => (
-            <>
-              <Title>Kris | 关于我</Title>
-              <Meta name="description" content="了解 Kris 的背景和经历" />
-              <About />
-            </>
-          )} />
-          <Route path="/skills" component={() => (
-            <>
-              <Title>Kris | 技能栈</Title>
-              <Meta name="description" content="Kris 掌握的技术和工具" />
-              <Skills />
-            </>
-          )} />
-          <Route path="/projects" component={() => (
-            <>
-              <Title>Kris | 精选项目</Title>
-              <Meta name="description" content="Kris 引以为豪的作品" />
-              <Projects />
-            </>
-          )} />
-          <Route path="/articles" component={() => (
-            <>
-              <Title>Kris | 文章</Title>
-              <Meta name="description" content="Kris 分享的技术文章与思考" />
-              <Articles />
-            </>
-          )} />
-<Route path="/article/fnos-openclaw-store-optimization" component={() => (
-            <>
-              <Title>Kris | 飞牛系统商店版 OpenClaw 优化实战</Title>
-              <ArticleFnosOpenClawStore />
-            </>
-          )} />
-          <Route path="/article/homenet-qx" component={() => (
-            <>
-              <Title>Kris | iOS Quantumult X 异地接入内网：HomeNet 双节点实战指南</Title>
-              <ArticleHomenetQX />
-            </>
-          )} />
-          <Route path="/article/dual-stack-domain" component={() => (
-            <>
-              <Title>Kris | 双栈域名体系完全指南</Title>
-              <ArticleDualStack />
-            </>
-          )} />
-          <Route path="/article/substore-homenet-traffic-8443" component={() => (
-            <>
-              <Title>Kris | SubStore HomeNet 优化实战：流量显示修复与 8443 独立链路</Title>
-              <ArticleSubstoreHomenetTraffic8443 />
-            </>
-          )} />
-          <Route path="/article/memory-embed-ollama" component={() => (
-            <>
-              <Title>Kris | OpenClaw 记忆优化：Ollama Embedding + memory-core</Title>
-              <ArticleMemoryEmbedOllama />
-            </>
-          )} />
-          <Route path="/article/fnos-igpu-temp" component={() => (
-            <>
-              <Title>Kris | FnOS 核显温度显示补丁：从原理到实现</Title>
-              <ArticleFnosIgpuTemp />
-            </>
-          )} />
-          <Route path="/login" component={() => (
-            <>
-              <Title>Kris | 登录</Title>
-              <Login />
-            </>
-          )} />
-          <Route path="*paramName" component={() => (
-            <>
-              <Title>404 - 页面未找到</Title>
-              <NotFound />
-            </>
-          )} />
+        <HashRouter root={App}>
+          <Route path="/" component={() => <RouteWithMeta title="DeltrivX | 个人主页" desc="DeltrivX - 全栈开发者、AI探索者、开源贡献者" Component={Home} />} />
+          <Route path="/about" component={() => <RouteWithMeta title="DeltrivX | 关于我" desc="了解 DeltrivX 的背景和经历" Component={About} />} />
+          <Route path="/skills" component={() => <RouteWithMeta title="DeltrivX | 技能栈" desc="DeltrivX 掌握的技术和工具" Component={Skills} />} />
+          <Route path="/projects" component={() => <RouteWithMeta title="DeltrivX | 精选项目" desc="DeltrivX 引以为豪的作品展示" Component={Projects} />} />
+          <Route path="/articles" component={() => <RouteWithMeta title="DeltrivX | 实战" desc="DeltrivX 分享的技术文章与思考" Component={Articles} />} />
+          <Route path="/article/fnos-openclaw-store-optimization" component={() => <RouteWithMeta title="DeltrivX | 飞牛系统商店版 OpenClaw 优化实战" desc="FnOS 商店版 OpenClaw 优化实战" Component={ArticleFnosOpenClawStore} />} />
+          <Route path="/article/homenet-qx" component={() => <RouteWithMeta title="DeltrivX | HomeNet QX 双节点实战" desc="iOS Quantumult X 异地接入内网" Component={ArticleHomenetQX} />} />
+          <Route path="/article/dual-stack-domain" component={() => <RouteWithMeta title="DeltrivX | 双栈域名体系指南" desc="双栈域名体系完全指南" Component={ArticleDualStack} />} />
+          <Route path="/article/substore-homenet-traffic-8443" component={() => <RouteWithMeta title="DeltrivX | SubStore HomeNet 优化实战" desc="SubStore 流量显示修复与 8443 独立链路" Component={ArticleSubstoreHomenetTraffic8443} />} />
+          <Route path="/article/memory-embed-ollama" component={() => <RouteWithMeta title="DeltrivX | 记忆优化实战" desc="Ollama Embedding + memory-core" Component={ArticleMemoryEmbedOllama} />} />
+          <Route path="/article/fnos-igpu-temp" component={() => <RouteWithMeta title="DeltrivX | FnOS 核显温度补丁" desc="FnOS 核显温度显示补丁从原理到实现" Component={ArticleFnosIgpuTemp} />} />
+          <Route path="/login" component={() => <RouteWithMeta title="DeltrivX | 登录" desc="登录" Component={Login} />} />
+          <Route path="*paramName" component={() => <RouteWithMeta title="404 - 页面未找到" desc="页面未找到" Component={NotFound} />} />
         </HashRouter>
       </MetaProvider>
     </AuthProvider>
