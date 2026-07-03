@@ -1,10 +1,11 @@
-import { onMount, onCleanup } from 'solid-js';
+import { onMount, onCleanup, createSignal } from 'solid-js';
 import { A } from '@solidjs/router';
 import { initReveal, initTilt } from '../utils/animations';
 
 export default function Home() {
     let typewriterEl;
     let timer;
+    const [ghStats, setGhStats] = createSignal(null);
 
     onMount(() => {
         initReveal();
@@ -28,6 +29,17 @@ export default function Home() {
             timer = setTimeout(typeWriter, speed);
         }
         typeWriter();
+
+        // 获取 GitHub 统计
+        fetch('https://api.github.com/users/deltrivx')
+            .then(r => r.json())
+            .then(data => {
+                setGhStats({
+                    repos: data.public_repos,
+                    followers: data.followers,
+                });
+            })
+            .catch(() => {});
     });
 
     onCleanup(() => clearTimeout(timer));
@@ -54,7 +66,7 @@ export default function Home() {
                 </div>
                 <div class="nav-cards-grid">
                     <A href="/about" class="nav-card reveal tilt-card">
-                        <div class="nav-card-icon">👨‍💻</div>
+                        <div class="nav-card-icon">👨💻</div>
                         <h3>关于我</h3>
                         <p>了解我的背景和经历</p>
                     </A>
@@ -73,6 +85,46 @@ export default function Home() {
                         <h3>实战</h3>
                         <p>查看我的技术实战</p>
                     </A>
+                </div>
+            </section>
+
+            <section class="gh-stats-section reveal">
+                <div class="section-header reveal">
+                    <h2><span class="gradient-text">GitHub 动态</span></h2>
+                    <p>我的开源足迹</p>
+                </div>
+                <div class="gh-stats-grid">
+                    <div class="gh-stat-card reveal tilt-card">
+                        <div class="gh-stat-icon">📦</div>
+                        <div class="gh-stat-value">
+                            {ghStats() ? ghStats().repos : '—'}
+                        </div>
+                        <div class="gh-stat-label">公开仓库</div>
+                    </div>
+                    <div class="gh-stat-card reveal tilt-card">
+                        <div class="gh-stat-icon">⭐</div>
+                        <div class="gh-stat-value">
+                            <a href="https://github.com/deltrivx?tab=repositories" target="_blank" style="color: inherit; text-decoration: none;">
+                                {ghStats() ? (ghStats().stars || 0) : '—'}
+                            </a>
+                        </div>
+                        <div class="gh-stat-label">累计 Stars</div>
+                    </div>
+                    <div class="gh-stat-card reveal tilt-card">
+                        <div class="gh-stat-icon">👥</div>
+                        <div class="gh-stat-value">
+                            {ghStats() ? ghStats().followers : '—'}
+                        </div>
+                        <div class="gh-stat-label">关注者</div>
+                    </div>
+                    <div class="gh-stat-card reveal tilt-card">
+                        <div class="gh-stat-icon">🛠️</div>
+                        <div class="gh-stat-value">SolidJS</div>
+                        <div class="gh-stat-label">主要技术栈</div>
+                    </div>
+                </div>
+                <div class="gh-cta reveal">
+                    <A href="https://github.com/deltrivx" target="_blank" class="btn btn-outline">🐙 前往 GitHub</A>
                 </div>
             </section>
         </>
