@@ -84,9 +84,33 @@
             position: relative; z-index: 1;
             min-height: 100vh; display: flex; align-items: center; justify-content: center;
             text-align: center; padding: 2rem;
+            overflow: hidden;
         }
 
-        .hero-content { max-width: 800px; }
+        /* 网格线条背景 */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background-image:
+                linear-gradient(rgba(108, 92, 231, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108, 92, 231, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        .hero-content {
+            max-width: 800px;
+            position: relative;
+            z-index: 2;
+        }
 
         .hero-badge {
             display: inline-block; padding: 0.4rem 1.2rem;
@@ -100,6 +124,18 @@
             font-size: clamp(2.5rem, 6vw, 4.5rem);
             font-weight: 900; line-height: 1.1;
             margin-bottom: 1.5rem; letter-spacing: -2px;
+            animation: heroTitleIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        /* 名字 glow 光晕 */
+        .hero h1 .gradient-text {
+            filter: drop-shadow(0 0 20px rgba(108, 92, 231, 0.3));
+        }
+
+        @keyframes heroTitleIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         /* 背景聚光灯效果 */
@@ -148,32 +184,44 @@
             font-size: clamp(1rem, 2.5vw, 1.3rem);
             color: var(--text-secondary); margin-bottom: 2.5rem;
             min-height: 2em;
+            animation: fadeInUp 0.8s 0.3s ease forwards; opacity: 0;
         }
         .typewriter .cursor {
-            display: inline-block; width: 2px; height: 1.2em;
-            background: var(--accent-2); margin-left: 2px;
-            animation: blink 0.8s step-end infinite; vertical-align: text-bottom;
+            display: inline-block; width: 3px; height: 1.3em;
+            background: var(--accent-2); margin-left: 3px;
+            animation: blink 0.6s step-end infinite; vertical-align: text-bottom;
+            box-shadow: 0 0 8px var(--accent-2);
         }
 
-        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; animation: fadeInUp 0.8s 0.6s ease forwards; opacity: 0; }
 
         .btn {
             padding: 0.85rem 2rem; border-radius: 12px; font-size: 0.95rem;
             font-weight: 600; text-decoration: none; cursor: pointer;
-            transition: all 0.3s ease; border: none; display: inline-flex; align-items: center; gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); border: none;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            position: relative;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
             color: #fff; box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108, 92, 231, 0.5); }
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.5);
+        }
+        .btn-primary:active { transform: scale(0.97); }
 
         .btn-outline {
             background: transparent; color: var(--text-primary);
             border: 1px solid var(--glass-border);
         }
-        .btn-outline:hover { background: var(--glass-bg); transform: translateY(-2px); }
+        .btn-outline:hover {
+            background: var(--glass-bg); transform: translateY(-3px) scale(1.03);
+            border-color: var(--accent-2);
+        }
+        .btn-outline:active { transform: scale(0.97); }
 
         .scroll-indicator {
             position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
@@ -403,16 +451,35 @@
     border: 1px solid var(--glass-border);
     text-decoration: none;
     color: var(--text-primary);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     text-align: center;
+    position: relative;
+    overflow: hidden;
 }
+.nav-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(108, 92, 231, 0.05), transparent);
+    transition: left 0.6s ease;
+}
+.nav-card:hover::before { left: 100%; }
 .nav-card:hover {
     transform: translateY(-8px);
     border-color: var(--accent-1);
     box-shadow: 0 8px 30px rgba(108, 92, 231, 0.2);
 }
-.nav-card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-.nav-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+.nav-card:hover .nav-card-icon {
+    animation: iconBounce 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+@keyframes iconBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+}
+.nav-card-icon { font-size: 2.5rem; margin-bottom: 1rem; display: inline-block; transition: transform 0.3s ease; }
+.nav-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; transition: color 0.3s ease; }
+.nav-card:hover h3 { color: var(--accent-2); }
 .nav-card p { color: var(--text-secondary); font-size: 0.9rem; }
 
 /* ===== Sub-page Hero Banner ===== */
@@ -854,4 +921,16 @@ html:not([data-vt-transition]) body {
         font-size: 0.75rem;
         padding: 3px 10px;
     }
+}
+
+
+/* 尊重用户减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .hero::before { animation: none; }
+    .scroll-indicator { animation: none; }
 }
