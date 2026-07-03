@@ -52,16 +52,9 @@
             background: rgba(10, 10, 15, 0.7);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
-            transition: transform 0.3s ease, padding 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
         }
         nav.hidden { transform: translateY(-100%); }
-        nav.scrolled {
-            padding: 0.7rem 3rem;
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(30px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            border-bottom-color: rgba(108, 92, 231, 0.3);
-        }
 
         .logo {
             font-size: 1.5rem; font-weight: 800;
@@ -930,61 +923,6 @@ html:not([data-vt-transition]) body {
     }
 }
 
-
-
-
-/* GitHub 统计区域 */
-.gh-stats-section {
-    padding: 4rem 2rem 6rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-.gh-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    max-width: 900px;
-    margin: 0 auto;
-}
-.gh-stat-card {
-    padding: 2rem 1.5rem;
-    border-radius: 16px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    text-align: center;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-.gh-stat-card:hover {
-    transform: translateY(-6px);
-    border-color: var(--accent-2);
-    box-shadow: 0 8px 30px rgba(0, 206, 201, 0.15);
-}
-.gh-stat-icon {
-    font-size: 2rem;
-    margin-bottom: 0.8rem;
-}
-.gh-stat-value {
-    font-size: 1.6rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.4rem;
-}
-.gh-stat-label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-.gh-cta {
-    text-align: center;
-    margin-top: 2.5rem;
-}
-@media (max-width: 700px) {
-    .gh-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
 
 /* 尊重用户减少动效偏好 */
 @media (prefers-reduced-motion: reduce) {
