@@ -934,3 +934,30 @@ html:not([data-vt-transition]) body {
     .hero::before { animation: none; }
     .scroll-indicator { animation: none; }
 }
+
+/* ===== Navbar Horizontal Scroll on Small Screens ===== */
+@media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { 
+        gap: 1rem; 
+        overflow-x: auto; 
+        white-space: nowrap; 
+        flex-wrap: nowrap;
+        max-width: 70vw;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-links li { flex-shrink: 0; }
+    .about-grid, .contact-wrapper { grid-template-columns: 1fr; gap: 2rem; }
+    .stats-row { justify-content: center; }
+    .about-image-wrapper { width: 200px; height: 200px; }
+    .contact-wrapper { margin-top: 2rem; padding: 2rem 1rem 0; }
+}
+
+/* Hide scrollbar */
+.nav-links {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.nav-links::-webkit-scrollbar {
+    display: none;
+}
