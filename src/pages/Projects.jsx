@@ -199,7 +199,7 @@ export default function Projects() {
             links: [{ url: "http://192.168.31.2:8888/allinssl", label: "🔗 内网" }],
         },
         {
-            icon: "🖥️",
+            icon: "🎦",
             name: "MDCx 图形界面",
             desc: "MDCx 媒体下载工具 GUI 版，基于 VNC 远程桌面操作。",
             tech: ["媒体", "下载", "GUI"],
