@@ -13,7 +13,7 @@ export default function Projects() {
 
         {
             icon: "🖥️",
-            name: "Unraid Tower",
+            name: "Unraid",
             desc: "家庭服务器核心系统，承载容器、VM、存储与各类自部署服务。",
             tech: ["Unraid", "NAS", "服务器"],
             links: [{ url: "https://tower.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:80", label: "🔗 内网" }],
