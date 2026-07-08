@@ -207,13 +207,6 @@ export default function Projects() {
         },
         // ===== 无链接 =====
         {
-            icon: "🎵",
-            name: "网易云音乐解锁",
-            desc: "解锁网易云音乐海外/灰色歌曲限制，支持 SubStore 远程订阅。",
-            tech: ["解锁", "音乐"],
-            links: [],
-        },
-        {
             icon: "🦙",
             name: "Ollama",
             desc: "本地大语言模型推理引擎，支持多种开源模型的快速部署与调用。",
