@@ -12,11 +12,19 @@ export default function Projects() {
         // ===== 双链接 (公网 + 内网) =====
 
         {
+            icon: "🖥️",
+            name: "Unraid Tower",
+            desc: "家庭服务器核心系统，承载容器、VM、存储与各类自部署服务。",
+            tech: ["Unraid", "NAS", "服务器"],
+            links: [{ url: "https://tower.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:80", label: "🔗 内网" }],
+        },
+
+        {
             icon: "🐮",
             name: "飞牛系统",
             desc: "FnOS 私有云系统，提供存储、影音、下载等一站式服务。",
             tech: ["FnOS", "NAS"],
-            links: [{ url: "https://fnos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5080", label: "🔗 内网" }],
+            links: [{ url: "https://fnos.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.5:5080", label: "🔗 内网" }],
         },
         {
             icon: "🏠",
@@ -30,7 +38,7 @@ export default function Projects() {
             name: "飞牛影视",
             desc: "FnOS 内置影视中心，支持在线观影与媒体管理。",
             tech: ["FnOS", "影视"],
-            links: [{ url: "https://fntv.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:8005", label: "🔗 内网" }],
+            links: [{ url: "https://fntv.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.5:8005", label: "🔗 内网" }],
         },
         {
             icon: "🧩",
