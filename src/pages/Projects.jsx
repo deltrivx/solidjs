@@ -126,21 +126,6 @@ export default function Projects() {
         // ===== 仅内网 =====
 
         {
-            icon: "🤖",
-            name: "OpenClaw AI",
-            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
-            tech: ["AI Agent", "LLM"],
-            links: [{ url: "http://192.168.31.2:18789/chat?token=5c2e9a71d4f8b3601a7c5e2d9b4f6a83c0d1e7b25f9a4c61", label: "🔗 内网" }],
-        },
-
-        {
-            icon: "🔱",
-            name: "Hermes",
-            desc: "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
-            tech: ["Hermes", "AI Agent", "Gateway"],
-            links: [{ url: "http://192.168.31.2:9119", label: "🔗 内网" }],
-        },
-        {
             icon: "🌀",
             name: "Sub2API",
             desc: "AI API 网关平台，支持订阅转换与多模型路由。",
@@ -206,6 +191,20 @@ export default function Projects() {
             links: [{ url: "http://192.168.31.2:5800", label: "🔗 内网" }],
         },
         // ===== 无链接 =====
+        {
+            icon: "🤖",
+            name: "OpenClaw AI",
+            desc: "智能 AI 代理系统，支持多模型切换与自动化任务编排。",
+            tech: ["AI Agent", "LLM"],
+            links: [],
+        },
+        {
+            icon: "🔱",
+            name: "Hermes",
+            desc: "NousResearch 开源 AI Agent 框架，支持多平台接入、工具调用与技能学习。",
+            tech: ["Hermes", "AI Agent", "Gateway"],
+            links: [],
+        },
         {
             icon: "🦙",
             name: "Ollama",
