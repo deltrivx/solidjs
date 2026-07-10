@@ -10,6 +10,14 @@ export default function Articles() {
 
     const articles = [
         {
+            title: '家庭内网双栈隧道架构：Cloudflare Tunnel + Nginx 统一域名入口实战',
+            subtitle: 'Cloudflare Tunnel · CoreDNS · Nginx 反代 · 双栈 · 内网防回环 · 端口隔离 · Shadowsocks over WSS',
+            date: '2026-07-10',
+            tags: ['Cloudflare', 'Tunnel', 'Nginx', '双栈', '内网穿透', 'CoreDNS', 'HomeNet'],
+            summary: '完整记录家庭内网域名统一接入体系：Cloudflare Tunnel 公网穿透、Nginx 18080 统一路由分发、CoreDNS 内网域名劫持、主路由 hosts 防回环、双栈 V4/V6 支持、Shadowsocks over WSS 直连节点。所有配置可完整复刻。',
+            slug: 'tunnel-dualstack-full-guide'
+        },
+        {
             title: 'SubStore HomeNet 优化实战：流量显示修复与 ss-direct 8443 独立链路',
             subtitle: 'SubStore · Quantumult X · Shadowsocks over WSS · Cloudflare Tunnel · Nginx 端口隔离',
             date: '2026-06-12',
