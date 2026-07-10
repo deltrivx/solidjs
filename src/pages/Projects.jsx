@@ -116,13 +116,7 @@ export default function Projects() {
             tech: ["工具", "集成"],
             links: [{ url: "https://omnibox.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:7023", label: "🔗 内网" }],
         },
-        {
-            icon: "🎥",
-            name: "咪咕视频助手",
-            desc: "咪咕视频资源抓取与下载工具。",
-            tech: ["视频", "抓取"],
-            links: [{ url: "https://migu.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:1234", label: "🔗 内网" }],
-        },
+
         // ===== 仅内网 =====
 
         {
