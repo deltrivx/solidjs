@@ -31,7 +31,7 @@ export default function ArticleTunnelDualStackFull() {
                 <div class="article-content">
 
                     <blockquote>
-                        <p>本文完整记录了一套家庭内网域名统一接入体系：从 Cloudflare Tunnel 公网穿透、Nginx 18080 统一路由分发、CoreDNS 内网域名劫持，到主路由 hosts 防回环、双栈 V4/V6 支持，以及 Shadowsocks over WSS 直连节点。所有配置均脱敏，按本文步骤可在另一台设备上完整复刻。</p>
+                        <p>本文完整记录了一套家庭内网域名统一接入体系：从 Cloudflare Tunnel 公网穿透、Nginx 统一路由分发、CoreDNS 内网域名劫持，到主路由 hosts 防回环、双栈 V4/V6 支持，以及 Shadowsocks over WSS 直连节点。所有配置均脱敏，按本文步骤可在另一台设备上完整复刻。</p>
                     </blockquote>
 
                     <h2>一、方案概述</h2>
@@ -62,7 +62,7 @@ export default function ArticleTunnelDualStackFull() {
 ┌─────────────────────────────────────────────────────────────────┐
 │                     内网用户                                     │
 │                          ↓                                      │
-│           主路由 31.1 hosts → 192.168.31.250                     │
+│           主路由 hosts → 192.168.31.250                         │
 │             (V4: 192.168.31.250 / V6: 2408:...::250)            │
 │                          ↓                                      │
 │           LanProxy (OpenResty) :443 SSL 卸载                      │
@@ -78,65 +78,49 @@ export default function ArticleTunnelDualStackFull() {
 │         HomeNet-CF:   substore.deltrivx.com:8443  (CF 中继)      │
 │                          ↓                                      │
 │               Nginx 18443 SSL → gost 11843 WSS                   │
-│               Cloudflared → Nginx 18080 → gost 10089 WSS        │
+│               Cloudflared → gost 10089 WSS                       │
 │                          ↓                                      │
 │                     内网服务                                      │
 └─────────────────────────────────────────────────────────────────┘`}</pre>
 
                     <h2>二、硬件与网络拓扑</h2>
 
-                    <p>本文基于以下硬件环境，你可以根据自身设备调整 IP 和配置：</p>
-
                     <table>
                         <thead>
-                            <tr><th>设备</th><th>IP</th><th>角色</th><th>OS</th></tr>
+                            <tr><th>设备</th><th>IP</th><th>角色</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>主路由</td><td>192.168.31.1</td><td>拨号上网、DHCP、hosts 域名劫持</td><td>OpenWRT / iStoreOS / 爱快等</td></tr>
-                            <tr><td>Tower</td><td>192.168.31.2</td><td>主力服务器，运行 Cloudflared、Nginx、LanProxy、LanDNS、所有 Docker 容器</td><td>Unraid 7.3.1</td></tr>
-                            <tr><td>FnOS</td><td>192.168.31.5</td><td>存储与影音服务（飞牛影视、FnOS 管理后台）</td><td>FnOS</td></tr>
-                            <tr><td>iStoreOS</td><td>192.168.31.10</td><td>软路由子系统（插件管理）</td><td>iStoreOS</td></tr>
-                            <tr><td>LanProxy</td><td>192.168.31.250</td><td>内网 SSL 卸载入口，OpenResty 容器，br0 模式独立 IP</td><td>OpenResty (容器)</td></tr>
-                            <tr><td>LanDNS</td><td>192.168.31.251</td><td>内网 DNS 服务器，CoreDNS 容器，br0 模式独立 IP</td><td>CoreDNS (容器)</td></tr>
+                            <tr><td>主路由</td><td>192.168.31.1</td><td>拨号、DHCP、hosts 域名劫持</td></tr>
+                            <tr><td>Tower</td><td>192.168.31.2</td><td>主力服务器，运行 Cloudflared、Nginx、LanProxy、LanDNS、所有容器</td></tr>
+                            <tr><td>FnOS</td><td>192.168.31.5</td><td>存储与影音服务</td></tr>
+                            <tr><td>iStoreOS</td><td>192.168.31.10</td><td>软路由子系统</td></tr>
+                            <tr><td>LanProxy</td><td>192.168.31.250</td><td>内网 SSL 卸载，OpenResty 容器 br0 独立 IP</td></tr>
+                            <tr><td>LanDNS</td><td>192.168.31.251</td><td>内网 DNS，CoreDNS 容器 br0 独立 IP</td></tr>
                         </tbody>
                     </table>
 
-                    <p>主路由的 DHCP 将 DNS 指向 <code>192.168.31.251</code>（LanDNS），所有内网设备自动使用 CoreDNS 解析域名。</p>
+                    <p>主路由 DHCP 将 DNS 指向 <code>192.168.31.251</code>（LanDNS），所有内网设备自动使用 CoreDNS 解析。</p>
 
                     <h2>三、Cloudflare 准备工作</h2>
 
                     <h3>3.1 域名与 NS</h3>
-                    <p>将域名（如 <code>deltrivx.com</code>）的 NS 记录指向 Cloudflare。在 Cloudflare 面板中完成域名添加后，你会获得 Zone ID 和 Account ID，后续需要用到。</p>
+                    <p>将域名 NS 记录指向 Cloudflare，在面板完成域名添加后获得 Zone ID 和 Account ID。</p>
 
                     <h3>3.2 创建 API Token</h3>
-                    <p>进入 Cloudflare 控制台 → My Profile → API Tokens → Create Token。选择 "Edit zone DNS" 模板，授权给当前域名：</p>
-                    <pre>{`# 权限模板
-Zone - DNS - Edit
-Zone - Zone - Read
-Zone - Cloudflare Tunnel - Read  # 如果需要管理 Tunnel`}</pre>
+                    <p>进入 Cloudflare 控制台 → My Profile → API Tokens → Create Token，选择 "Edit zone DNS" 模板，授权给当前域名。</p>
 
                     <h3>3.3 创建 Tunnel</h3>
-                    <pre>{`# 安装 cloudflared（直接在服务器上执行）
-wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O /usr/local/bin/cloudflared
-chmod +x /usr/local/bin/cloudflared
-
-# 认证（会打开浏览器登录你的 Cloudflare 账号）
-cloudflared tunnel login
-
-# 创建 Tunnel
+                    <pre>{`cloudflared tunnel login
 cloudflared tunnel create my-tunnel
+# 记录 Tunnel ID，例如 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`}</pre>
 
-# 记录 Tunnel ID，例如 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-# 记录凭证文件路径，例如 ~/.cloudflared/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.json`}</pre>
-
-                    <p>创建完成后，Tunnel 的域名入口为 <code>&lt;TUNNEL_ID&gt;.cfargotunnel.com</code>，后续所有 DNS 记录都 CNAME 指向这个地址。</p>
+                    <p>Tunnel 创建后域名入口为 <code>&lt;TUNNEL_ID&gt;.cfargotunnel.com</code>，后续所有 DNS CNAME 记录指向这个地址。</p>
 
                     <h2>四、容器化部署 Cloudflared</h2>
 
-                    <p>本文使用 Docker 运行 cloudflared，使用 host 网络模式以获取最佳性能：</p>
+                    <p>使用 Docker 运行，host 网络模式：</p>
 
-                    <pre>{`# docker-compose.yml
-services:
+                    <pre>{`services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: Cloudflared
@@ -147,75 +131,44 @@ services:
     command: tunnel run
     entrypoint: cloudflared --no-autoupdate
     volumes:
-      - /mnt/user/appdata/cloudflared/config.yml:/etc/cloudflared/config.yml`}</pre>
+      - /path/to/config.yml:/etc/cloudflared/config.yml`}</pre>
 
-                    <p><code>--no-autoupdate</code> 避免容器内自动更新导致意外重启，镜像版本由 Docker 管理。</p>
+                    <p><code>config.yml</code> 配置示例：</p>
 
-                    <p><code>config.yml</code> 配置如下：</p>
-
-                    <pre>{`# /mnt/user/appdata/cloudflared/config.yml
-token: "<TUNNEL_TOKEN>"   # 从凭证文件获取
+                    <pre>{`# /path/to/config.yml
+token: "<TUNNEL_TOKEN>"
 
 ingress:
-  # 全部指向 Nginx 18080 统一入口
-  - hostname: homeassistant.deltrivx.com
+  # 普通域名 → Nginx 18080 统一入口
+  - hostname: homeassistant.example.com
     service: http://127.0.0.1:18080
-  - hostname: moviepilot.deltrivx.com
+  - hostname: emby.example.com
     service: http://127.0.0.1:18080
-  - hostname: pansou.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: portainer.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: ddnsgo.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: openlist.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: omnibox.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: migu.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: emby.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: fntv.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: chromium.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: istoreos.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: tower.deltrivx.com
-    service: http://127.0.0.1:18080
-  - hostname: fnos.deltrivx.com
+  - hostname: fnos.example.com
     service: http://127.0.0.1:18080
 
-  # SubStore 特殊路径：ss-direct 直接指向 gost，不走 Nginx
-  - hostname: substore.deltrivx.com
+  # SubStore 特殊路径：ss-direct 直达 gost
+  - hostname: substore.example.com
     path: /ss-direct
     service: http://127.0.0.1:10089
-  - hostname: substore.deltrivx.com
+  - hostname: substore.example.com
     service: http://127.0.0.1:18080
 
-  # fast 域名由 Nginx 18443 处理，Cloudflared 不处理
-  - hostname: fast.deltrivx.com
+  # 直连节点不由 Cloudflared 处理
+  - hostname: fast.example.com
     service: http_status:404
 
   # 兜底
   - service: http_status:404`}</pre>
 
-                    <p>验证配置并重启：</p>
-                    <pre>{`# 验证 ingress 规则
-docker exec Cloudflared cloudflared tunnel ingress validate
-
-# 重启
-docker restart Cloudflared
-
-# 查看日志
-docker logs --tail 30 Cloudflared`}</pre>
+                    <p>验证并重启：</p>
+                    <pre>{`docker exec Cloudflared cloudflared tunnel --config /etc/cloudflared/config.yml ingress validate
+docker restart Cloudflared`}</pre>
 
                     <h2>五、Nginx 统一路由分发层</h2>
 
-                    <p>Nginx 监听 <code>18080</code> 端口，所有 Cloudflared 转发过来的流量按 <code>Host</code> header 分发到对应后端服务。</p>
+                    <p>Nginx 监听 18080 端口，按 <code>Host</code> header 分发到对应后端。容器配置：</p>
 
-                    <h3>5.1 Nginx 容器</h3>
                     <pre>{`services:
   nginx:
     image: nginx:latest
@@ -223,14 +176,14 @@ docker logs --tail 30 Cloudflared`}</pre>
     network_mode: host
     restart: always
     volumes:
-      - /mnt/user/appdata/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /mnt/user/appdata/nginx/conf.d:/etc/nginx/conf.d
-      - /mnt/user/appdata/nginx/certs:/etc/nginx/certs
-      - /mnt/user/appdata/nginx/html:/usr/share/nginx/html
-      - /mnt/user/appdata/nginx/logs:/var/log/nginx`}</pre>
+      - /path/to/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - /path/to/nginx/conf.d:/etc/nginx/conf.d
+      - /path/to/nginx/certs:/etc/nginx/certs
+      - /path/to/nginx/html:/usr/share/nginx/html
+      - /path/to/nginx/logs:/var/log/nginx`}</pre>
 
-                    <h3>5.2 主配置文件</h3>
-                    <pre>{`# /mnt/user/appdata/nginx/nginx.conf
+                    <p>主配置文件：</p>
+                    <pre>{`# /path/to/nginx/nginx.conf
 worker_processes auto;
 events { worker_connections 4096; }
 http {
@@ -240,7 +193,6 @@ http {
     keepalive_timeout 65;
     server_tokens off;
 
-    # WebSocket 升级映射
     map $http_upgrade $connection_upgrade {
         default upgrade;
         "" close;
@@ -249,119 +201,15 @@ http {
     include /etc/nginx/conf.d/*.conf;
 }`}</pre>
 
-                    <h3>5.3 域名入口配置</h3>
-                    <p>以下为 <code>80-domains.conf</code> 完整内容。每个服务一个 server block，按功能分组：</p>
+                    <p>域名入口 <code>80-domains.conf</code> —— 每个服务一个 server block，按功能分组。以下仅列示例，实际按需添加：</p>
 
-                    <pre>{`# /mnt/user/appdata/nginx/conf.d/80-domains.conf
-# 18080 域名代理总入口 · *.deltrivx.com
+                    <pre>{`# 18080 域名代理总入口 · *.example.com
 # 注: map $http_upgrade $connection_upgrade 已在 nginx.conf 定义
 
-# ── SubStore (含 WebSocket) ──
+# FnOS 管理后台（跨主机）
 server {
     listen 18080;
-    server_name substore.deltrivx.com;
-
-    location = /ss-direct {
-        proxy_pass http://192.168.31.2:3100;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_read_timeout 86400s;
-        proxy_send_timeout 86400s;
-    }
-
-    location / {
-        proxy_pass http://192.168.31.2:3100;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 86400s;
-        proxy_send_timeout 86400s;
-    }
-}
-
-# ── 下载工具 ──
-server {
-    listen 18080;
-    server_name migu.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:1234;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-# ── 影音媒体 ──
-server {
-    listen 18080;
-    server_name emby.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:8096;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-
-# ── 文件 & 网盘 ──
-server {
-    listen 18080;
-    server_name pansou.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:3080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-server {
-    listen 18080;
-    server_name openlist.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:5244;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-# ── 智能家居 ──
-server {
-    listen 18080;
-    server_name homeassistant.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:8123;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-    location /api/websocket {
-        proxy_pass http://192.168.31.2:8123/api/websocket;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 86400s;
-    }
-}
-
-# ── 系统管理 ──
-server {
-    listen 18080;
-    server_name fnos.deltrivx.com;
+    server_name fnos.example.com;
     location / {
         proxy_pass http://192.168.31.5:5080;
         proxy_http_version 1.1;
@@ -375,107 +223,36 @@ server {
     }
 }
 
+# Emby 媒体服务器（本机服务）
 server {
     listen 18080;
-    server_name fntv.deltrivx.com;
+    server_name emby.example.com;
     location / {
-        proxy_pass http://192.168.31.5:8005;
+        proxy_pass http://192.168.31.2:8096;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 }
 
+# HomeAssistant（WebSocket）
 server {
     listen 18080;
-    server_name portainer.deltrivx.com;
+    server_name homeassistant.example.com;
     location / {
-        proxy_pass http://192.168.31.2:9000;
+        proxy_pass http://192.168.31.2:8123;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-server {
-    listen 18080;
-    server_name ddnsgo.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:9876;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-# ── 其他服务 ──
-server {
-    listen 18080;
-    server_name moviepilot.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-server {
-    listen 18080;
-    server_name omnibox.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:7023;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-server {
-    listen 18080;
-    server_name chromium.deltrivx.com;
-    location / {
-        proxy_pass https://192.168.31.2:3011;
-        proxy_ssl_verify off;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_read_timeout 86400s;
-        proxy_send_timeout 86400s;
+        proxy_set_header Connection "upgrade";
     }
-}
-
-server {
-    listen 18080;
-    server_name istoreos.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.10:80;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-
-server {
-    listen 18080;
-    server_name tower.deltrivx.com;
-    location / {
-        proxy_pass http://192.168.31.2:80;
+    location /api/websocket {
+        proxy_pass http://192.168.31.2:8123/api/websocket;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_set_header X-Forwarded-Ssl on;
-        proxy_set_header X-Forwarded-Port 443;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
         proxy_read_timeout 86400s;
-        proxy_send_timeout 86400s;
-        proxy_redirect http://tower.deltrivx.com/ https://tower.deltrivx.com/;
     }
 }
 
@@ -486,17 +263,34 @@ server {
     location / { return 404; }
 }`}</pre>
 
-                    <p>添加新服务时，只需在这个文件里新增一个 server block，然后 reload Nginx：</p>
-                    <pre>{`docker exec Nginx nginx -t
-docker exec Nginx nginx -s reload`}</pre>
+                    <p>添加新服务时，新增一个 server block 然后 reload：</p>
+                    <pre>{`docker exec Nginx nginx -t && docker exec Nginx nginx -s reload`}</pre>
+
+                    <p><strong>反代模板速查</strong>：</p>
+
+                    <p>普通 HTTP：</p>
+                    <pre>{`location / {
+    proxy_pass http://BACKEND_IP:PORT;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}`}</pre>
+
+                    <p>WebSocket：</p>
+                    <pre>{`location / {
+    proxy_pass http://BACKEND_IP:PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_set_header Host $host;
+    proxy_read_timeout 86400s;
+    proxy_send_timeout 86400s;
+}`}</pre>
 
                     <h2>六、内网 DNS 劫持：CoreDNS</h2>
 
-                    <p>内网用户访问 <code>*.deltrivx.com</code> 时，如果走公网会形成回环：内网设备 → 主路由 → 外网 → CF 边缘 → Tunnel → 本机。延迟大、浪费带宽，且部分服务可能依赖内网直连。</p>
+                    <p>内网用户访问 <code>*.example.com</code> 时如果走公网会形成回环：内网设备 → 主路由 → 外网 → CF 边缘 → Tunnel → 本机。解决方案：内网 DNS 将域名解析到本地 IP。</p>
 
-                    <p>解决方案：在内网架设一个 DNS 服务器，将 <code>*.deltrivx.com</code> 解析到本地 IP，不走公网。</p>
-
-                    <h3>6.1 CoreDNS 容器</h3>
                     <pre>{`services:
   landns:
     image: coredns/coredns:1.12.2
@@ -507,55 +301,39 @@ docker exec Nginx nginx -s reload`}</pre>
     restart: always
     command: -conf /etc/coredns/Corefile
     volumes:
-      - /mnt/user/appdata/landns/Corefile:/etc/coredns/Corefile
-      - /mnt/user/appdata/landns/lan-hosts:/etc/coredns/lan-hosts`}</pre>
+      - /path/to/landns/Corefile:/etc/coredns/Corefile
+      - /path/to/landns/lan-hosts:/etc/coredns/lan-hosts`}</pre>
 
-                    <p>br0 网络模式需要 Docker 自定义 macvlan/bridge 网络，确保容器获得独立 IP。</p>
-
-                    <h3>6.2 Corefile 配置</h3>
-                    <pre>{`# /mnt/user/appdata/landns/Corefile
+                    <pre>{`# /path/to/landns/Corefile
 .:53 {
     errors
     log
-
     hosts /etc/coredns/lan-hosts {
         ttl 30
         fallthrough
     }
-
     forward . 223.5.5.5 119.29.29.29
     cache 30
 }`}</pre>
 
-                    <h3>6.3 hosts 文件</h3>
-                    <pre>{`# /mnt/user/appdata/landns/lan-hosts
-# 内网域名劫持 - 所有 *.deltrivx.com 指向 LanProxy (31.250)
+                    <pre>{`# /path/to/landns/lan-hosts
 # V4 解析
-192.168.31.250 homeassistant.deltrivx.com moviepilot.deltrivx.com pansou.deltrivx.com portainer.deltrivx.com ddnsgo.deltrivx.com openlist.deltrivx.com omnibox.deltrivx.com migu.deltrivx.com emby.deltrivx.com fntv.deltrivx.com chromium.deltrivx.com istoreos.deltrivx.com substore.deltrivx.com tower.deltrivx.com fnos.deltrivx.com
+192.168.31.250 homeassistant.example.com emby.example.com fnos.example.com substore.example.com
 
-# V6 解析（可选，如果内网有 V6 环境）
-2408:8266:2e01:a560::250 homeassistant.deltrivx.com moviepilot.deltrivx.com pansou.deltrivx.com portainer.deltrivx.com ddnsgo.deltrivx.com openlist.deltrivx.com omnibox.deltrivx.com migu.deltrivx.com emby.deltrivx.com fntv.deltrivx.com chromium.deltrivx.com istoreos.deltrivx.com substore.deltrivx.com tower.deltrivx.com fnos.deltrivx.com`}</pre>
+# V6 解析（可选）
+2408:8266:2e01:a560::250 homeassistant.example.com emby.example.com fnos.example.com substore.example.com`}</pre>
 
-                    <p>添加新域名时，同步更新这个文件的两行（V4 和 V6），然后重启 LanDNS：</p>
-                    <pre>{`docker restart LanDNS`}</pre>
+                    <p>添加新域名时同步更新两行，重启 LanDNS：<code>docker restart LanDNS</code>。</p>
 
-                    <h3>6.4 主路由设置</h3>
-                    <p>在主路由（192.168.31.1）的 DHCP 设置中，将 DNS 服务器设为 <code>192.168.31.251</code>。所有内网设备自动获取 DNS 后，访问 <code>*.deltrivx.com</code> 就会解析到 LanProxy。</p>
-
-                    <p>同时，在主路由的 <code>/etc/hosts</code> 中追加同样的域名映射，确保路由器自身也走内网直连：</p>
+                    <p>主路由 DHCP 将 DNS 指向 <code>192.168.31.251</code>。同时主路由 <code>/etc/hosts</code> 中追加同样映射，确保路由器自身不走公网：</p>
                     <pre>{`# 主路由 /etc/hosts 追加
-192.168.31.250 homeassistant.deltrivx.com moviepilot.deltrivx.com pansou.deltrivx.com portainer.deltrivx.com ddnsgo.deltrivx.com openlist.deltrivx.com omnibox.deltrivx.com migu.deltrivx.com emby.deltrivx.com fntv.deltrivx.com chromium.deltrivx.com istoreos.deltrivx.com substore.deltrivx.com tower.deltrivx.com fnos.deltrivx.com
-2408:8266:2e01:a560::250 homeassistant.deltrivx.com moviepilot.deltrivx.com pansou.deltrivx.com portainer.deltrivx.com ddnsgo.deltrivx.com openlist.deltrivx.com omnibox.deltrivx.com migu.deltrivx.com emby.deltrivx.com fntv.deltrivx.com chromium.deltrivx.com istoreos.deltrivx.com substore.deltrivx.com tower.deltrivx.com fnos.deltrivx.com`}</pre>
-
-                    <p>注意：本文不修改主路由的 DNS 指向配置，仅在 hosts 中追加域名映射。</p>
+192.168.31.250 homeassistant.example.com emby.example.com fnos.example.com substore.example.com
+2408:8266:2e01:a560::250 homeassistant.example.com emby.example.com fnos.example.com substore.example.com`}</pre>
 
                     <h2>七、内网 SSL 卸载：LanProxy</h2>
 
-                    <p>内网用户访问域名时，如果走 HTTP 会被浏览器标记不安全，且部分服务强制 HTTPS。因此需要一个内网 SSL 卸载层。</p>
+                    <p>内网用户需要 HTTPS 访问，用 OpenResty 统一 SSL 卸载后转发到 Nginx 18080。</p>
 
-                    <p>LanProxy 使用 OpenResty（nginx 增强版），监听 443 端口，统一 SSL 卸载后转发到 Tower Nginx 18080。</p>
-
-                    <h3>7.1 LanProxy 容器</h3>
                     <pre>{`services:
   lanproxy:
     image: openresty/openresty:alpine
@@ -567,24 +345,23 @@ docker exec Nginx nginx -s reload`}</pre>
         ipv6_address: 2408:8266:2e01:a560::250
     command: /usr/local/openresty/bin/openresty -g 'daemon off;'
     volumes:
-      - /mnt/user/appdata/lanproxy/default.conf:/etc/nginx/conf.d/default.conf
-      - /mnt/user/appdata/nginx/certs:/etc/nginx/certs
-      - /mnt/user/appdata/lanproxy/logs:/var/log/nginx`}</pre>
+      - /path/to/lanproxy/default.conf:/etc/nginx/conf.d/default.conf
+      - /path/to/nginx/certs:/etc/nginx/certs
+      - /path/to/lanproxy/logs:/var/log/nginx`}</pre>
 
-                    <h3>7.2 LanProxy 配置</h3>
-                    <pre>{`# /mnt/user/appdata/lanproxy/default.conf
+                    <pre>{`# /path/to/lanproxy/default.conf
 map $http_upgrade $connection_upgrade {
     default upgrade;
     '' close;
 }
 
 upstream tunnel_proxy {
-    server 192.168.31.248:18080;  # 指向 Tower 的 Nginx 18080
+    server 192.168.31.248:18080;  # Tower 的 Nginx 18080
     keepalive 32;
 }
 
 upstream fast_direct_tls {
-    server 192.168.31.248:18443;  # 指向 Tower 的 Nginx 18443 (直连节点)
+    server 192.168.31.248:18443;  # 直连节点
     keepalive 8;
 }
 
@@ -596,30 +373,19 @@ server {
     return 308 https://$host$request_uri;
 }
 
-# 主 SSL 入口
+# 主 SSL 入口 - 统一代理所有域名
 server {
     listen 443 ssl default_server;
     listen [::]:443 ssl default_server;
     http2 on;
     server_name
-        openlist.deltrivx.com
-        pansou.deltrivx.com
-        substore.deltrivx.com
-        tower.deltrivx.com
-        fnos.deltrivx.com
-        fntv.deltrivx.com
-        homeassistant.deltrivx.com
-        moviepilot.deltrivx.com
-        portainer.deltrivx.com
-        ddnsgo.deltrivx.com
-        omnibox.deltrivx.com
-        migu.deltrivx.com
-        emby.deltrivx.com
-        chromium.deltrivx.com
-        istoreos.deltrivx.com;
+        homeassistant.example.com
+        emby.example.com
+        fnos.example.com
+        substore.example.com;
 
-    ssl_certificate     /etc/nginx/certs/deltrivx.com/fullchain.pem;
-    ssl_certificate_key /etc/nginx/certs/deltrivx.com/privkey.pem;
+    ssl_certificate     /etc/nginx/certs/example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/example.com/privkey.pem;
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 1d;
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -638,31 +404,25 @@ server {
     }
 }
 
-# fast 直连节点 SSL 入口
+# fast 直连节点
 server {
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    server_name fast.deltrivx.com;
+    server_name fast.example.com;
 
-    ssl_certificate     /etc/nginx/certs/deltrivx.com/fullchain.pem;
-    ssl_certificate_key /etc/nginx/certs/deltrivx.com/privkey.pem;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_timeout 1d;
-    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_certificate     /etc/nginx/certs/example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/example.com/privkey.pem;
 
     location = /ss-direct {
         proxy_pass https://fast_direct_tls;
         proxy_ssl_server_name on;
-        proxy_ssl_name fast.deltrivx.com;
+        proxy_ssl_name fast.example.com;
         proxy_ssl_verify off;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
         proxy_read_timeout 86400s;
         proxy_send_timeout 86400s;
     }
@@ -676,13 +436,12 @@ server {
     listen [::]:443 ssl;
     http2 on;
     server_name _;
-    ssl_certificate     /etc/nginx/certs/deltrivx.com/fullchain.pem;
-    ssl_certificate_key /etc/nginx/certs/deltrivx.com/privkey.pem;
+    ssl_certificate     /etc/nginx/certs/example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/example.com/privkey.pem;
     return 404;
 }`}</pre>
 
-                    <h3>7.3 证书来源</h3>
-                    <p>证书文件位于 <code>/mnt/user/appdata/nginx/certs/deltrivx.com/</code>，包含 <code>fullchain.pem</code> 和 <code>privkey.pem</code>。可以使用 AllinSSL 容器自动化申请和续签：</p>
+                    <p>证书可通过 AllinSSL 自动续签：</p>
                     <pre>{`services:
   allinssl:
     image: allinssl/allinssl:latest
@@ -690,106 +449,49 @@ server {
     restart: always
     network_mode: host
     volumes:
-      - /mnt/user/appdata/allinssl:/www/allinssl/data`}</pre>
-                    <p>通过 <code>http://192.168.31.2:8888/allinssl</code> 访问管理面板，配置证书自动续签。</p>
+      - /path/to/allinssl:/www/allinssl/data`}</pre>
 
                     <h2>八、双栈（V4/V6）实现</h2>
 
-                    <h3>8.1 公网双栈</h3>
-                    <p>Cloudflare 边缘节点天然支持 IPv4 和 IPv6。所有 DNS 记录开启代理（橙云）后，Cloudflare 自动处理双栈接入：</p>
-                    <ul>
-                        <li>IPv4 用户访问时，Cloudflare 返回 CF 边缘的 IPv4 地址。</li>
-                        <li>IPv6 用户访问时，Cloudflare 返回 CF 边缘的 IPv6 地址。</li>
-                        <li>CF 边缘到 Tunnel 回源走 IPv4。</li>
-                    </ul>
-                    <p>无需任何额外配置。公网 DNS 记录统一为 CNAME 指向 <code>&lt;TUNNEL_ID&gt;.cfargotunnel.com</code>，开启代理：</p>
-                    <pre>{`# 添加 DNS 记录示例
+                    <p><strong>公网双栈</strong>：Cloudflare 边缘节点天然支持 V4/V6，DNS 记录开启代理（橙云）即可，无需额外配置。</p>
+
+                    <pre>{`# DNS 添加示例
 curl -s -X POST "https://api.cloudflare.com/client/v4/zones/<ZONE_ID>/dns_records" \\
   -H "Authorization: Bearer <API_TOKEN>" \\
   -H "Content-Type: application/json" \\
-  -d '{
-    "type": "CNAME",
-    "name": "emby",
-    "content": "<TUNNEL_ID>.cfargotunnel.com",
-    "ttl": 1,
-    "proxied": true
-  }'`}</pre>
+  -d '{"type":"CNAME","name":"emby","content":"<TUNNEL_ID>.cfargotunnel.com","ttl":1,"proxied":true}'`}</pre>
 
-                    <h3>8.2 内网双栈</h3>
-                    <p>内网 DNS（CoreDNS）同时配置了 V4 和 V6 解析：</p>
-                    <ul>
-                        <li><strong>V4</strong>：<code>192.168.31.250</code>（LanProxy）</li>
-                        <li><strong>V6</strong>：<code>2408:8266:2e01:a560::250</code>（LanProxy 的 V6 地址）</li>
-                    </ul>
-                    <p>主路由的 hosts 同样配置 V4 和 V6 双行，确保路由器自身和 DHCP 客户端都能正确解析。</p>
+                    <p><strong>内网双栈</strong>：CoreDNS 同时配置 V4 和 V6 解析，主路由 hosts 同样双行。</p>
 
-                    <p>验证双栈：</p>
-                    <pre>{`# 内网 V4 解析
-dig +short A emby.deltrivx.com @192.168.31.251
-# 期望: 192.168.31.250
+                    <p>验证命令：</p>
+                    <pre>{`# 内网解析
+dig +short A emby.example.com @192.168.31.251       # → 192.168.31.250
+dig +short AAAA emby.example.com @192.168.31.251    # → 2408:...::250
 
-# 内网 V6 解析
-dig +short AAAA emby.deltrivx.com @192.168.31.251
-# 期望: 2408:8266:2e01:a560::250
-
-# 公网 V4 解析
-dig +short A emby.deltrivx.com
-# 期望: CF 边缘 IPv4 (如 104.21.x.x)
-
-# 公网 V6 解析
-dig +short AAAA emby.deltrivx.com
-# 期望: CF 边缘 IPv6 (如 2606:4700::xxx)`}</pre>
+# 公网解析
+dig +short A emby.example.com                       # → CF IPv4
+dig +short AAAA emby.example.com                    # → CF IPv6`}</pre>
 
                     <h2>九、HomeNet 直连节点：Shadowsocks over WSS</h2>
 
-                    <p>异地访问内网时，可以通过 Cloudflare Tunnel 走 HTTP 访问页面，但代理隧道（Shadowsocks）需要 WebSocket 升级。因此设计两条代理路径：</p>
+                    <p>异地访问内网时，通过 gost 建立两条代理路径。gost 嵌入在 Sub-Store 容器内：</p>
 
-                    <ul>
-                        <li><strong>HomeNet-Fast</strong>：直连路径，走 <code>fast.deltrivx.com:18443</code>。</li>
-                        <li><strong>HomeNet-CF</strong>：备用路径，走 <code>substore.deltrivx.com:8443</code>，通过 Cloudflare Tunnel 中继。</li>
-                    </ul>
+                    <pre>{`# start-single.sh（gost 部分）
+# Fast 路径 - 监听 127.0.0.1:11843
+gost -L "ss+ws://chacha20-ietf-poly1305:***@127.0.0.1:11843?path=/ss-direct" &
 
-                    <h3>9.1 gost 代理服务端</h3>
-                    <p>gost 嵌入在 Sub-Store 容器内，通过启动脚本启动两个 gost 实例：</p>
-                    <pre>{`# /mnt/user/appdata/sub-store/app/start-single.sh
-#!/bin/sh
-set -eu
+# CF 路径 - 监听 127.0.0.1:10089
+gost -L "ss+ws://chacha20-ietf-poly1305:***@127.0.0.1:10089?path=/ss-direct" &`}</pre>
 
-# HomeNet Fast 路径 - 监听 127.0.0.1:11843
-gost -L "ss+ws://chacha20-ietf-poly1305:password@127.0.0.1:11843?path=/ss-direct" &
-GOST_PID1=$!
-
-# HomeNet CF 路径 - 监听 127.0.0.1:10089
-gost -L "ss+ws://chacha20-ietf-poly1305:password@127.0.0.1:10089?path=/ss-direct" &
-GOST_PID2=$!
-
-# 启动 SubStore 主程序
-node -r /opt/app/homenet-backend-hook.js /opt/app/sub-store.bundle.js &
-APP_PID=$!
-
-# 守护进程
-while true; do
-  kill -0 "$APP_PID" 2>/dev/null || exit 1
-  kill -0 "$GOST_PID1" 2>/dev/null || exit 1
-  kill -0 "$GOST_PID2" 2>/dev/null || exit 1
-  sleep 2
-done`}</pre>
-
-                    <p>两个 gost 实例的区别：</p>
-                    <ul>
-                        <li><code>11843</code>：Fast 路径，被 Nginx 18443 反代。</li>
-                        <li><code>10089</code>：CF 路径，被 Cloudflared 直接反代（不走 Nginx 18080）。</li>
-                    </ul>
-
-                    <h3>9.2 Fast 路径：Nginx 18443 SSL</h3>
-                    <pre>{`# /mnt/user/appdata/nginx/conf.d/443-fast.conf
+                    <p>Fast 路径走 Nginx 18443 SSL 转发到 gost 11843：</p>
+                    <pre>{`# /path/to/nginx/conf.d/443-fast.conf
 server {
     listen 18443 ssl;
     listen [::]:18443 ssl;
-    server_name fast.deltrivx.com;
+    server_name fast.example.com;
 
-    ssl_certificate     /etc/nginx/certs/deltrivx.com/fullchain.pem;
-    ssl_certificate_key /etc/nginx/certs/deltrivx.com/privkey.pem;
+    ssl_certificate     /etc/nginx/certs/example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/example.com/privkey.pem;
 
     location = /ss-direct {
         proxy_pass http://127.0.0.1:11843;
@@ -804,46 +506,33 @@ server {
     location / { return 404; }
 }`}</pre>
 
-                    <h3>9.3 CF 路径：Cloudflared 直达 gost</h3>
-                    <p>在 Cloudflared config.yml 中，<code>substore.deltrivx.com/ss-direct</code> 直接指向 gost 10089，不走 Nginx：</p>
-                    <pre>{`  # SubStore 特殊路径：ss-direct 直接指向 gost
-  - hostname: substore.deltrivx.com
+                    <p>CF 路径在 Cloudflared ingress 中直接指向 gost 10089，不走 Nginx：</p>
+                    <pre>{`  - hostname: substore.example.com
     path: /ss-direct
-    service: http://127.0.0.1:10089
+    service: http://127.0.0.1:10089`}</pre>
 
-  # SubStore 普通页面走 Nginx
-  - hostname: substore.deltrivx.com
-    service: http://127.0.0.1:18080`}</pre>
-
-                    <p>端口隔离的好处：</p>
+                    <p>端口隔离原则：</p>
                     <ul>
-                        <li><code>443</code>：SubStore 页面、订阅、userinfo。</li>
-                        <li><code>8443</code>：只承载 <code>/ss-direct</code> WSS 隧道（CF 中继路径）。</li>
-                        <li><code>18443</code>：只承载 <code>/ss-direct</code> WSS 隧道（直连路径）。</li>
+                        <li><code>443</code>：页面、订阅、userinfo</li>
+                        <li><code>8443</code>：CF 中继 /ss-direct</li>
+                        <li><code>18443</code>：直连 /ss-direct</li>
                     </ul>
 
-                    <h3>9.4 Quantumult X 客户端配置</h3>
-                    <p>客户端通过 SubStore 订阅拉取节点，自动生成两条节点：</p>
-                    <pre>{`# HomeNet-Fast：直连路径
-shadowsocks=fast.deltrivx.com:18443, method=chacha20-ietf-poly1305, password=password, obfs=wss, obfs-host=fast.deltrivx.com, obfs-uri=/ss-direct, fast-open=true, udp-relay=false, server_check_url=http://connectivitycheck.gstatic.com/generate_204, tag=HomeNet-Fast
+                    <p>Quantumult X 客户端节点配置：</p>
+                    <pre>{`# HomeNet-Fast（直连）
+shadowsocks=fast.example.com:18443, method=chacha20-ietf-poly1305, password=*** obfs=wss, obfs-host=fast.example.com, obfs-uri=/ss-direct, tag=HomeNet-Fast
 
-# HomeNet-CF：CF 中继路径
-shadowsocks=substore.deltrivx.com:8443, method=chacha20-ietf-poly1305, password=password, obfs=wss, obfs-host=substore.deltrivx.com, obfs-uri=/ss-direct, tls-verification=false, fast-open=true, udp-relay=false, server_check_url=http://connectivitycheck.gstatic.com/generate_204, tag=HomeNet-CF`}</pre>
-
-                    <p>在 Quantumult X 中配置策略组，优先使用 Fast 路径，Fast 不通时自动切换到 CF 路径。</p>
+# HomeNet-CF（CF 中继）
+shadowsocks=substore.example.com:8443, method=chacha20-ietf-poly1305, password=*** obfs=wss, obfs-host=substore.example.com, obfs-uri=/ss-direct, tls-verification=false, tag=HomeNet-CF`}</pre>
 
                     <h2>十、公网 DNS 批量配置</h2>
 
-                    <p>所有域名统一添加 CNAME 记录。以下脚本可批量添加：</p>
                     <pre>{`#!/bin/bash
-# batch-add-dns.sh
 ZONE_ID="你的ZoneID"
-API_TOKEN="你的APIToken"
+API_TOKEN="***"
 TUNNEL_ID="你的TunnelID.cfargotunnel.com"
 
-for name in homeassistant moviepilot pansou portainer ddnsgo \\
-            openlist omnibox migu emby fntv chromium istoreos \\
-            substore tower fnos; do
+for name in homeassistant emby fnos substore; do
   curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \\
     -H "Authorization: Bearer $API_TOKEN" \\
     -H "Content-Type: application/json" \\
@@ -851,28 +540,24 @@ for name in homeassistant moviepilot pansou portainer ddnsgo \\
   sleep 0.3
 done`}</pre>
 
-                    <p>注意：<code>fast.deltrivx.com</code> 的 DNS 记录应为 A/AAAA 记录指向公网 IP（或 DDNS），不开启代理，因为它是直连节点。</p>
+                    <p>注意：<code>fast.example.com</code> 的 DNS 应为 A/AAAA 记录指向公网 IP，不开启代理。</p>
 
                     <h2>十一、内网防回环完整流程</h2>
 
-                    <p>总结内网防回环的完整链路：</p>
                     <pre>{`内网设备 → 主路由 DHCP → DNS 192.168.31.251 (CoreDNS)
-         → CoreDNS hosts 匹配 *.deltrivx.com
+         → CoreDNS hosts 匹配 *.example.com
          → 返回 192.168.31.250 (LanProxy V4) / V6 地址
-         → 浏览器访问 https://substore.deltrivx.com
+         → 浏览器访问 https://emby.example.com
          → 主路由 hosts 也指向 31.250（路由器自身）
          → LanProxy 443 SSL 卸载
-         → proxy_pass → Tower 192.168.31.248:18080
+         → proxy_pass → Tower Nginx 18080
          → Nginx 按 Host header 分发到后端
-         → 后端服务响应
 
 结果：全程内网，不经过公网，延迟 <1ms`}</pre>
 
-                    <p>注意：<code>192.168.31.248</code> 是 Tower 在 Docker br0 网络中的 IP（Tower 主机本身是 31.2，但 br0 网络中容器通过 31.248 访问宿主机端口）。你的环境可能不同，请根据实际网络配置调整。</p>
+                    <p>注意：<code>192.168.31.248</code> 是 Tower 在 Docker br0 网络中的 IP，你的环境可能不同。</p>
 
                     <h2>十二、容器配置清单</h2>
-
-                    <p>以下为完整的 docker-compose.yml 配置，包含所有关键基础设施容器：</p>
 
                     <pre>{`version: '3.8'
 
@@ -895,8 +580,7 @@ services:
     container_name: Cloudflared
     network_mode: host
     restart: always
-    cap_add:
-      - CAP_NET_RAW
+    cap_add: [CAP_NET_RAW]
     command: tunnel run
     entrypoint: cloudflared --no-autoupdate
     volumes:
@@ -950,111 +634,68 @@ services:
 
                     <h2>十三、验证流程</h2>
 
-                    <p>部署完成后，按以下步骤逐一验证：</p>
+                    <pre>{`# Cloudflared
+docker ps --filter name=Cloudflared
+docker exec Cloudflared cloudflared tunnel --config /etc/cloudflared/config.yml ingress validate
 
-                    <h3>13.1 验证 Cloudflared</h3>
-                    <pre>{`# 检查容器运行状态
-docker ps --filter name=Cloudflared --format "{{.Names}} {{.Status}}"
-
-# 验证 ingress 规则
-docker exec Cloudflared cloudflared tunnel ingress validate
-
-# 查看日志
-docker logs --tail 20 Cloudflared`}</pre>
-
-                    <h3>13.2 验证 Nginx</h3>
-                    <pre>{`# 检查配置
+# Nginx
 docker exec Nginx nginx -t
+curl -I -H "Host: emby.example.com" http://127.0.0.1:18080/
 
-# 验证内网 Host header 可达
-curl -I --max-time 5 -H "Host: emby.deltrivx.com" http://127.0.0.1:18080/
+# 公网
+dig +short A emby.example.com          # → CF IPv4
+dig +short AAAA emby.example.com       # → CF IPv6
 
-# 验证 WebSocket 服务
-curl -I --max-time 5 -H "Host: homeassistant.deltrivx.com" http://127.0.0.1:18080/api/websocket`}</pre>
+# 内网直连
+dig +short A emby.example.com @192.168.31.251   # → 192.168.31.250
+curl -I https://emby.example.com                # 不走公网
 
-                    <h3>13.3 验证公网访问</h3>
-                    <pre>{`# 公网 DNS 解析
-dig +short A emby.deltrivx.com
-dig +short AAAA emby.deltrivx.com
-
-# 公网访问（需要在外网环境测试）
-curl -4 -I https://emby.deltrivx.com
-curl -6 -I https://emby.deltrivx.com`}</pre>
-
-                    <h3>13.4 验证内网直连</h3>
-                    <pre>{`# 内网 DNS 解析
-dig +short A emby.deltrivx.com @192.168.31.251
-# 期望: 192.168.31.250
-
-# 内网访问
-curl -I https://emby.deltrivx.com
-# 期望: 直接返回，不走公网`}</pre>
-
-                    <h3>13.5 验证代理隧道</h3>
-                    <pre>{`# 验证 Fast 直连节点
-curl -k -I https://fast.deltrivx.com:18443/ss-direct
-
-# 验证 CF 中继节点
-curl -k -I https://substore.deltrivx.com:8443/ss-direct
-
-# 验证 userinfo 接口
-curl -s https://substore.deltrivx.com/homenet-userinfo`}</pre>
+# 代理隧道
+curl -k -I https://fast.example.com:18443/ss-direct
+curl -k -I https://substore.example.com:8443/ss-direct`}</pre>
 
                     <h2>十四、添加新服务流程</h2>
 
-                    <p>当有新服务上线时，按以下步骤操作：</p>
-
                     <ol>
-                        <li>在 Nginx <code>80-domains.conf</code> 中新增 server block，配置 proxy_pass。</li>
-                        <li>在 CoreDNS <code>lan-hosts</code> 中新增域名（V4 和 V6 两行）。</li>
-                        <li>在主路由 <code>/etc/hosts</code> 中新增域名（V4 和 V6 两行）。</li>
-                        <li>在 Cloudflared <code>config.yml</code> 中新增 ingress 规则（插入到兜底 404 前）。</li>
-                        <li>在 Cloudflare DNS 中添加 CNAME 记录。</li>
-                        <li>验证：<code>nginx -t && cloudflared tunnel ingress validate && nginx -s reload && docker restart Cloudflared</code></li>
+                        <li>Nginx <code>80-domains.conf</code> 新增 server block</li>
+                        <li>CoreDNS <code>lan-hosts</code> 新增域名（V4 + V6 两行）</li>
+                        <li>主路由 <code>/etc/hosts</code> 新增域名（V4 + V6 两行）</li>
+                        <li>Cloudflared <code>config.yml</code> 新增 ingress 规则</li>
+                        <li>Cloudflare DNS 添加 CNAME 记录</li>
+                        <li>验证：<code>nginx -t && cloudflared ingress validate && nginx -s reload && docker restart Cloudflared</code></li>
                     </ol>
 
                     <h2>十五、常见问题</h2>
 
-                    <h3>Q1：内网访问 CF 域名走公网回环了？</h3>
-                    <p>检查 CoreDNS 是否正常运行，主路由 DHCP 是否将 DNS 指向 31.251，主路由 hosts 是否配置了域名映射。可以在内网设备上执行 <code>nslookup emby.deltrivx.com</code> 确认解析结果。</p>
+                    <h3>Q1：内网访问走公网回环？</h3>
+                    <p>检查 CoreDNS 是否运行，主路由 DHCP DNS 是否指向 31.251，主路由 hosts 是否正确。内网设备执行 <code>nslookup emby.example.com</code> 确认解析结果。</p>
 
-                    <h3>Q2：添加新域名后 CoreDNS 不生效？</h3>
-                    <p>CoreDNS 的 hosts 缓存 TTL 为 30 秒。如果修改后不生效，重启容器：<code>docker restart LanDNS</code>。同时检查主路由 hosts 是否同步更新。</p>
+                    <h3>Q2：Cloudflared ingress 验证失败？</h3>
+                    <p>检查规则顺序——特殊路径必须在普通域名之前，兜底 404 必须在最后。修改后需重启容器。</p>
 
-                    <h3>Q3：Cloudflared ingress 验证失败？</h3>
-                    <p>检查 ingress 规则顺序——特殊路径（如 <code>/ss-direct</code>）必须在普通域名之前，兜底 404 必须在最后。每新增一条规则都需要重新验证和重启。</p>
+                    <h3>Q3：Nginx 502？</h3>
+                    <p>检查后端服务端口。使用 <code>curl -I http://127.0.0.1:PORT</code> 直接测试后端。WebSocket 服务需 <code>proxy_http_version 1.1</code> 和 Upgrade 头。</p>
 
-                    <h3>Q4：Nginx 配置了，访问还是 502？</h3>
-                    <p>检查后端服务端口是否正确，是否在监听。使用 <code>curl -I http://127.0.0.1:PORT</code> 直接测试后端服务是否可达。WebSocket 服务需要额外的 <code>proxy_http_version 1.1</code> 和 Upgrade 头。</p>
+                    <h3>Q4：双栈 V6 不通？</h3>
+                    <p>检查主路由 V6 防火墙是否放行 443。CF 边缘到 Tunnel 回源走 V4，内网 V6 需 LanProxy V6 地址和 hosts 双行正确配置。</p>
 
-                    <h3>Q5：双栈配置后，V6 访问不通？</h3>
-                    <p>检查主路由的 V6 防火墙是否放行 443 端口。Cloudflare 边缘节点天然支持 V6，但回源到 Tunnel 走 V4。内网 V6 直连需要 LanProxy 的 V6 地址正确配置，且主路由 hosts 包含 V6 行。</p>
-
-                    <h3>Q6：如何备份和恢复配置？</h3>
-                    <pre>{`# 备份所有配置
-tar -czf tunnel-backup-$(date +%Y%m%d).tar.gz \\
-  /mnt/user/appdata/cloudflared/ \\
-  /mnt/user/appdata/nginx/conf.d/ \\
-  /mnt/user/appdata/nginx/nginx.conf \\
-  /mnt/user/appdata/lanproxy/ \\
-  /mnt/user/appdata/landns/ \\
-  /mnt/user/appdata/nginx/certs/
-
-# 恢复
-tar -xzf tunnel-backup-YYYYMMDD.tar.gz -C /`}</pre>
+                    <h3>Q5：如何备份？</h3>
+                    <pre>{`tar -czf tunnel-backup-\$(date +%Y%m%d).tar.gz \\
+  /path/to/cloudflared/ /path/to/nginx/conf.d/ /path/to/nginx/nginx.conf \\
+  /path/to/lanproxy/ /path/to/landns/ /path/to/nginx/certs/`}</pre>
 
                     <h2>十六、总结</h2>
 
-                    <p>这套架构的核心设计原则：</p>
+                    <p>核心设计原则：</p>
                     <ul>
-                        <li><strong>统一入口</strong>：所有域名统一走 Nginx 18080 分发，新增服务只需加一个 server block。</li>
-                        <li><strong>职责分离</strong>：Cloudflared 只负责隧道穿透，Nginx 只负责路由分发，CoreDNS 只负责 DNS 解析，各司其职。</li>
-                        <li><strong>内外分流</strong>：内网用户通过 DNS 劫持直连，不经过公网；外网用户通过 Cloudflare Tunnel 穿透。</li>
-                        <li><strong>双栈就绪</strong>：V4 和 V6 同时支持，适应不同网络环境。</li>
-                        <li><strong>端口隔离</strong>：页面、订阅、代理隧道使用不同端口，排障不互相干扰。</li>
+                        <li><strong>统一入口</strong>：所有域名走 Nginx 18080 分发</li>
+                        <li><strong>职责分离</strong>：Cloudflared 管隧道，Nginx 管路由，CoreDNS 管解析</li>
+                        <li><strong>内外分流</strong>：内网 DNS 劫持直连，外网 Tunnel 穿透</li>
+                        <li><strong>双栈就绪</strong>：V4/V6 同时支持</li>
+                        <li><strong>端口隔离</strong>：页面、订阅、代理隧道不同端口</li>
                     </ul>
 
-                    <p>按本文步骤，你可以在另一台设备上完整复刻这套架构。唯一的定制化部分是域名、IP 地址和 Cloudflare Token——这些已经在文中脱敏，替换为你的实际值即可。</p>
+                    <p>按本文步骤替换域名、IP 和 Token 后即可完整复刻。</p>
 
                 </div>
             </div>
