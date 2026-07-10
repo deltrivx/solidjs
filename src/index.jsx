@@ -16,6 +16,7 @@ const ArticleFnosOpenClawStore = lazy(() => import('./pages/articles/ArticleFnos
 const ArticleFnosIgpuTemp = lazy(() => import('./pages/articles/ArticleFnosIgpuTemp'));
 const ArticleMemoryEmbedOllama = lazy(() => import('./pages/articles/ArticleMemoryEmbedOllama'));
 const ArticleSubstoreHomenetTraffic8443 = lazy(() => import('./pages/articles/ArticleSubstoreHomenetTraffic8443'));
+const ArticleTunnelDualStackFull = lazy(() => import('./pages/articles/ArticleTunnelDualStackFull'));
 const Login = lazy(() => import('./pages/Login'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 import './css/style.css';
@@ -57,6 +58,7 @@ render(
           <Route path="/article/substore-homenet-traffic-8443" component={() => <RouteWithMeta title="DeltrivX | SubStore HomeNet 优化实战" desc="SubStore 流量显示修复与 8443 独立链路" Component={ArticleSubstoreHomenetTraffic8443} />} />
           <Route path="/article/memory-embed-ollama" component={() => <RouteWithMeta title="DeltrivX | 记忆优化实战" desc="Ollama Embedding + memory-core" Component={ArticleMemoryEmbedOllama} />} />
           <Route path="/article/fnos-igpu-temp" component={() => <RouteWithMeta title="DeltrivX | FnOS 核显温度补丁" desc="FnOS 核显温度显示补丁从原理到实现" Component={ArticleFnosIgpuTemp} />} />
+          <Route path="/article/tunnel-dualstack-full-guide" component={() => <RouteWithMeta title="DeltrivX | 双栈隧道架构" desc="家庭内网双栈隧道架构实战" Component={ArticleTunnelDualStackFull} />} />
           <Route path="/login" component={() => <RouteWithMeta title="DeltrivX | 登录" desc="登录" Component={Login} />} />
           <Route path="*paramName" component={() => <RouteWithMeta title="404 - 页面未找到" desc="页面未找到" Component={NotFound} />} />
         </HashRouter>
