@@ -120,6 +120,13 @@ export default function Projects() {
         // ===== 仅内网 =====
 
         {
+            icon: "🔀",
+            name: "CLIProxyAPI",
+            desc: "CLI 代理 API 网关，统一多模型路由与管理面板。",
+            tech: ["API", "AI", "Gateway"],
+            links: [{ url: "http://192.168.31.2:8317/management.html", label: "🔗 内网" }],
+        },
+        {
             icon: "🌀",
             name: "Sub2API",
             desc: "AI API 网关平台，支持订阅转换与多模型路由。",
