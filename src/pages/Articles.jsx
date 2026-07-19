@@ -42,11 +42,11 @@ export default function Articles() {
             slug: 'memory-embed-ollama'
         },
         {
-            title: '飞牛系统商店版 OpenClaw 优化实战：启动守护、路径复刻与更新按钮增强',
-            subtitle: 'FnOS App Center · trim.openclaw · systemd 兜底自启 · Gateway loopback · 插件优先更新',
-            date: '2026-05-29',
-            tags: ['FnOS', 'OpenClaw', 'systemd', 'Bun', 'Gateway'],
-            summary: '完整记录飞牛系统商店版 OpenClaw 的运行路径、用户权限、systemd 兜底启动脚本、控制面板检查更新按钮逻辑，以及更新前检查商店插件、优先升级渠道插件的优化方案。按文中路径、脚本、运行用户与权限基线，可在另一台 FnOS 设备复刻一致运行环境，避免 root 权限污染。',
+            title: '飞牛系统商店版 OpenClaw 优化实战：Monitor API 开机引导、状态修复与更新按钮',
+            subtitle: 'FnOS App Center · trim.openclaw · bootstrap 引导 · Gateway loopback · 权限隔离',
+            date: '2026-07-20',
+            tags: ['FnOS', 'OpenClaw', 'systemd', 'Bun', 'Monitor', 'Gateway'],
+            summary: '2026-07 修订：商店版 OpenClaw 开机由 trim-openclaw-gateway + bootstrap 经 Monitor API action=start 引导；废弃 ensure 直拉 Gateway。含路径、权限基线、更新顺序、备份清单与排错，可在另一台 FnOS 复刻。',
             slug: 'fnos-openclaw-store-optimization'
         },
         {
