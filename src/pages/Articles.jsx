@@ -10,6 +10,14 @@ export default function Articles() {
 
     const articles = [
         {
+            title: 'FnOS 双 OpenClaw 实例并存实战：商店版 + 自装版隔离、端口与 systemd 复刻',
+            subtitle: 'trim.openclaw · openclaw-user · loopback 端口隔离 · Monitor/Gateway 双链路 · 权限分用户',
+            date: '2026-07-19',
+            tags: ['FnOS', 'OpenClaw', '双实例', 'systemd', 'Gateway', '隔离'],
+            summary: '记录同一台飞牛上并行两套 OpenClaw（商店版 + 用户自装版）的路径、用户、端口、systemd、Monitor、代理与权限隔离，附完整复刻步骤、验证矩阵与常见踩坑，便于新机按文落地。',
+            slug: 'fnos-openclaw-dual-instance'
+        },
+        {
             title: '家庭内网双栈隧道架构：Cloudflare Tunnel + Nginx 统一域名入口实战',
             subtitle: 'Cloudflare Tunnel · CoreDNS · Nginx 反代 · 双栈 · 内网防回环 · 端口隔离 · Shadowsocks over WSS',
             date: '2026-07-10',
