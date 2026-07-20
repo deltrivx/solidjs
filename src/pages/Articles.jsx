@@ -10,6 +10,14 @@ export default function Articles() {
 
     const articles = [
         {
+            title: '飞牛系统商店版 Hermes 启动优化实战：与 App Center 共存的 systemd 引导',
+            subtitle: 'trim.hermes · wrapper 预检 · Dashboard :19119 · Gateway :18642 · drop-in 冷启动',
+            date: '2026-07-20',
+            tags: ['FnOS', 'Hermes', 'systemd', 'App Center', 'Gateway', '维护'],
+            summary: '记录商店版 Hermes 与 trim-hermes-wrapper 抢端口导致面板 502 的根因，给出可复用的 systemd unit + 20-boot-order drop-in：先等 Dashboard 就绪再起 Gateway，端口已占用则跳过。附路径、验收矩阵、备份与排错，便于其它 FnOS 主机复刻。',
+            slug: 'fnos-hermes-store-boot'
+        },
+        {
             title: 'FnOS 双 OpenClaw 实例并存实战：商店版 + 自装版隔离、端口与 systemd 复刻',
             subtitle: 'trim.openclaw · openclaw-user · loopback 端口隔离 · Monitor/Gateway 双链路 · 权限分用户',
             date: '2026-07-19',
