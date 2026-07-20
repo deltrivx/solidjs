@@ -101,15 +101,7 @@ export default function Projects() {
             tech: ["DNS", "自动运维"],
             links: [{ url: "https://ddnsgo.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:9876", label: "🔗 内网" }],
         },
-        {
-            icon: "📂",
-            name: "OpenList 目录索引",
-            desc: "轻量级文件目录索引与分享系统。",
-            tech: ["文件管理", "分享"],
-            links: [{ url: "https://openlist.deltrivx.com", label: "🌐 公网" }, { url: "http://192.168.31.2:5244", label: "🔗 内网" }],
-        },
-
-        {
+{
             icon: "🔗",
             name: "OmniBox 综合工具",
             desc: "多功能集成工具箱。",
