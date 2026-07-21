@@ -11,10 +11,10 @@ export default function Articles() {
     const articles = [
         {
             title: '飞牛系统商店版 Hermes 开机引导实战：oneshot 点火 + wrapper 共存（可完整复刻）',
-            subtitle: 'trim.hermes · oneshot · KillMode=none · Dashboard :19119 · Gateway :18642 · NO_PROXY 精确 IP',
+            subtitle: 'trim.hermes · oneshot · 一键安装 · KillMode=none · Gateway :18642 · NO_PROXY 精确 IP',
             date: '2026-07-21',
             tags: ['FnOS', 'Hermes', 'systemd', 'App Center', 'Gateway', 'oneshot', '维护'],
-            summary: '2026-07-21 修订：废弃常驻 trim-hermes-gateway + drop-in。现行 oneshot 点火（hermes-gateway-boot）：同用户走 wrapper 路径尽量保住 Dashboard，再原生 CLI 起 Gateway；KillMode=none 保证 stop unit 不杀网关。含完整 unit/脚本、NO_PROXY 精确 IP 坑、验收矩阵与冷启动复刻清单。',
+            summary: '2026-07-21 修订：oneshot 点火替代常驻 unit；含从零到可跑一键安装脚本（清理旧 unit→写 boot 两件套→enable/start→自检）、KillMode=none、NO_PROXY 精确 IP 坑、验收矩阵与冷启动复刻清单。',
             slug: 'fnos-hermes-store-boot'
         },
         {
