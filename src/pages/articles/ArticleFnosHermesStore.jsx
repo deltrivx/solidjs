@@ -132,7 +132,7 @@ Hermes Gateway
 | Hermes Dashboard  | 127.0.0.1:19119          | wrapper 拉起的面板 |
 | Hermes Gateway    | 127.0.0.1:18642          | 消息网关 / API |
 | wrapper unix sock | .../run/trim-hermes.sock | App Center 通信 |
-| 运行用户          | trim.hermes              | 主组常见为 AppUsers，辅组含 trim.hermes；uid/gid 以 `id trim.hermes` 为准 |
+| 运行用户          | trim.hermes              | 主组常见为 AppUsers，辅组含 trim.hermes；uid/gid 以命令 id trim.hermes 为准 |
 | unit Group        | Group=trim.hermes        | 对齐商店运行时 gid，避免写权限漂移 |`}</pre>
 
                     <h2>四、根因时间线：为什么旧方案会翻车</h2>
