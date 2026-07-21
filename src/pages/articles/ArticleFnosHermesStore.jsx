@@ -12,16 +12,17 @@ export default function ArticleFnosHermesStore() {
             <div class="article-container reveal">
                 <A href="/articles" class="back-link">← 返回文章列表</A>
                 <div class="article-header">
-                    <h1>飞牛系统商店版 Hermes 启动优化实战：与 App Center 共存的 systemd 引导</h1>
-                    <p class="article-subtitle">trim.hermes · trim-hermes-wrapper · dashboard :19119 · gateway :18642 · drop-in 20-boot-order · 可复刻维护清单</p>
+                    <h1>飞牛系统商店版 Hermes 开机引导实战：oneshot 点火 + wrapper 共存（可完整复刻）</h1>
+                    <p class="article-subtitle">trim.hermes · trim-hermes-wrapper · oneshot · KillMode=none · Dashboard :19119 · Gateway :18642 · NO_PROXY 精确 IP</p>
                     <div class="article-meta">
-                        <span class="article-date">2026-07-20</span>
+                        <span class="article-date">2026-07-21</span>
                         <div class="article-tags">
                             <span class="tech-tag">FnOS</span>
                             <span class="tech-tag">Hermes</span>
                             <span class="tech-tag">systemd</span>
                             <span class="tech-tag">App Center</span>
                             <span class="tech-tag">Gateway</span>
+                            <span class="tech-tag">oneshot</span>
                             <span class="tech-tag">维护</span>
                         </div>
                     </div>
@@ -29,52 +30,64 @@ export default function ArticleFnosHermesStore() {
                 <div class="article-content">
 
                     <h2>一、写在前面：本文解决什么问题</h2>
-                    <p>飞牛系统（FnOS）商店版 Hermes 不是「随便起一个 Python 进程」这么简单。商店侧会由 App Center 拉起 <code>trim-hermes-wrapper</code>，wrapper 会先做<strong>端口预检</strong>（对 <code>:18642</code> 做硬绑定探测），再起 Dashboard。若 systemd 抢在预检前把 Hermes Gateway 拉起来，面板常见现象是：</p>
+                    <p>飞牛系统（FnOS）商店版 Hermes 不是「随便起一个 Python 进程」这么简单。商店侧由 App Center 拉起 <code>trim-hermes-wrapper</code>（Go），wrapper 在起 Dashboard 前会对 <code>:18642</code>（及必要时 <code>:19119</code>）做<strong>硬绑定端口预检</strong>。若 systemd 用常驻 unit 长期占住 Gateway，面板常见现象是：</p>
                     <ul>
-                        <li>面板显示 “Hermes could not start” / 502</li>
-                        <li>wrapper 报 “port not available”</li>
-                        <li>Gateway 其实在跑，但商店生命周期与 systemd 互相抢端口</li>
+                        <li>面板 “Hermes could not start” / address already in use</li>
+                        <li>wrapper 预检失败，Dashboard 起不来或页面 502</li>
+                        <li>Gateway 其实在跑，但商店生命周期与 systemd 互抢端口</li>
                     </ul>
-                    <p>本文记录一套在真实 FnOS 上已验证可复用的方案：用 <code>trim-hermes-gateway.service</code> + drop-in <code>20-boot-order.conf</code>，在<strong>不破坏商店 wrapper</strong>的前提下稳定拉起 Gateway，并给出可迁移到其它主机的路径、端口、验证与维护清单。</p>
-                    <p>与商店版 OpenClaw 优化同属「App Center 范式」：systemd 只做引导/兜底，生命周期尽量与面板一致。OpenClaw 侧见 <A href="/article/fnos-openclaw-store-optimization">飞牛系统商店版 OpenClaw 优化实战</A>。</p>
-                    <p>本文所有域名、Token、真实内网地址均做脱敏。示例中的 <code>example.com</code>、<code>192.168.x.x</code>、<code>&lt;TOKEN&gt;</code> 请替换为你自己的环境。商店用户名 <code>trim.hermes</code> 为 FnOS 常见约定，可按实际保留。</p>
+                    <p><strong>2026-07-21 修订说明：</strong>早期文章使用常驻 <code>trim-hermes-gateway.service</code> + drop-in <code>20-boot-order.conf</code>（等 Dashboard 再起 Gateway、<code>Restart=on-failure</code>）。真实踩坑后确认：<strong>常驻监管 Gateway 与 wrapper 的 preflight 硬 bind 本质冲突</strong>。现行稳定方案改为与商店版 OpenClaw 同思路的<strong>开机 oneshot 点火</strong>：</p>
+                    <ul>
+                        <li>unit：<code>hermes-gateway-boot.service</code>（<code>Type=oneshot</code>，<code>KillMode=none</code>）</li>
+                        <li>脚本：<code>/usr/local/bin/hermes-gateway-boot.sh</code></li>
+                        <li>以商店用户 <code>trim.hermes</code> 走 wrapper 路径尽量保住 Dashboard 归属，再用原生 CLI 起 Gateway</li>
+                        <li>网关 detached 后由 Hermes 自己管（lock / state），oneshot 不再 <code>Restart=always</code> 抢端口</li>
+                    </ul>
+                    <p>本文给出可迁移到其它 FnOS 主机的完整路径、unit、脚本、NO_PROXY 坑、验收矩阵与回滚清单。域名、Token、真实内网地址已脱敏；示例 <code>192.168.x.x</code>、<code>&lt;TOKEN&gt;</code> 请替换为你的环境。</p>
+                    <p>对照 OpenClaw 商店引导见 <A href="/article/fnos-openclaw-store-optimization">飞牛系统商店版 OpenClaw 优化实战</A>：两边都是「systemd 只点火，生命周期尽量落在商店路径内」。</p>
 
-                    <h2>二、目标架构</h2>
+                    <h2>二、目标架构（2026-07-21 现行）</h2>
                     <pre>{`FnOS App Center / trim_app_center
-  → /var/apps/trim.hermes
-    → wrapper: trim-hermes-wrapper
-         --socket  /vol1/@appcenter/trim.hermes/run/trim-hermes.sock
-         --dashboard-host 127.0.0.1
-         --dashboard-port 19119
-         --app-root  /vol1/@appcenter/trim.hermes
-         --data-root /vol1/@appdata/trim.hermes
-      → preflightRuntimePorts（硬绑定探测 :18642）
-      → Dashboard: 127.0.0.1:19119
+  → wrapper: trim-hermes-wrapper
+       --socket  /vol1/@appcenter/trim.hermes/run/trim-hermes.sock
+       --dashboard-host 127.0.0.1
+       --dashboard-port 19119
+       --app-root  /vol1/@appcenter/trim.hermes
+       --data-root /vol1/@appdata/trim.hermes
+    → preflightRuntimePorts（硬 bind 探测 :18642，必要时也探 :19119）
+    → Dashboard: 127.0.0.1:19119   （理想：ppid = wrapper）
 
-systemd: trim-hermes-gateway.service （enabled）
-  base unit: hermes gateway run --replace --accept-hooks
-  drop-in 20-boot-order.conf:
-    After/Wants=trim_app_center.service
-    ExecCondition: :18642 已 LISTEN 则跳过（不抢已有 Gateway）
-    ExecStartPre: 最多 90s 等待 http://127.0.0.1:19119/ 就绪
-                  （证明 wrapper 预检已过、不会再硬绑 :18642）
-    Restart=on-failure（避免 clean SIGTERM 被 always 重启刷屏）
+systemd oneshot: hermes-gateway-boot.service （enabled）
+  Type=oneshot · RemainAfterExit=yes · KillMode=none
+  User/Group=trim.hermes
+  WorkingDirectory=.../workspace
+  ExecStart=/usr/local/bin/hermes-gateway-boot.sh
+  脚本顺序：
+    1) 等 wrapper unix sock + health
+    2) 若 Dashboard 未起 / 归属不对 → 短暂释放 :18642 → 走 wrapper admin 入口拉起面板
+    3) 若 :18642 未 LISTEN → setsid hermes gateway run --replace --accept-hooks
+    4) 写 gateway.lock / gateway_state.json；health 200 后 exit 0
+    5) 不再常驻监管；stop unit 不得杀已 detached 的网关
 
 Hermes Gateway
-  → 127.0.0.1:18642  （loopback）
-  → User=trim.hermes · HERMES_HOME=/vol1/@appdata/trim.hermes/hermes`}</pre>
+  → 127.0.0.1:18642
+  → HERMES_HOME=/vol1/@appdata/trim.hermes/hermes
+  → 原生指纹：python3.11.real -m hermes_cli.main gateway run --replace --accept-hooks
+`}</pre>
 
                     <p>关键设计原则：</p>
                     <ul>
-                        <li><strong>先 Dashboard、后 Gateway</strong>：Dashboard 起来说明 wrapper 预检已完成。</li>
-                        <li><strong>端口已占用则跳过</strong>：App Center 或其它实例已占 <code>:18642</code> 时，systemd 不硬抢。</li>
-                        <li><strong>商店用户运行</strong>：全程 <code>trim.hermes</code>，避免 root 污染权限。</li>
-                        <li><strong>Gateway 优先 loopback</strong>：外网入口走反代 / Tunnel，不直暴进程端口。</li>
-                        <li><strong>drop-in 可回滚</strong>：只覆盖启动顺序与条件，不改业务二进制。</li>
+                        <li><strong>oneshot 点火，不常驻监管</strong>：长期 <code>Restart=always</code> 占着 <code>:18642</code> 必撞 preflight。</li>
+                        <li><strong>KillMode=none</strong>：oneshot 退出/stop 时默认 control-group 会杀子进程；网关必须继续活。</li>
+                        <li><strong>Dashboard 归商店 wrapper</strong>：不要另起常驻 <code>hermes-dashboard.service</code>（只会把碰撞从 18642 挪到 19119）。</li>
+                        <li><strong>Gateway 归 Hermes 原生 lock</strong>：同用户、同 CLI、同状态文件，商店后续可识别/接管。</li>
+                        <li><strong>先尽量满足 wrapper，再起 Gateway</strong>：必要时短暂释放 <code>:18642</code> 让 preflight 过。</li>
+                        <li><strong>NO_PROXY 写精确 IP</strong>：Python httpx/requests <strong>不认 CIDR / 通配</strong>，见第七节。</li>
+                        <li><strong>Gateway 优先 loopback</strong>：外网走反代 / Tunnel，不直暴进程端口。</li>
                     </ul>
 
                     <h2>三、路径与运行环境定位</h2>
-                    <p>复刻前先在目标机核对（路径可能随卷名略有差异）：</p>
+                    <p>复刻前先在目标机核对（卷名可能略有差异）：</p>
                     <pre>{`# 商店应用入口
 /var/apps/trim.hermes
   target -> /vol1/@appcenter/trim.hermes
@@ -87,6 +100,7 @@ Hermes Gateway
   wrapper/trim-hermes-wrapper
   runtime/python/bin/hermes
   runtime/python/bin/python3.11.real
+  runtime/python/node/bin/...
   run/trim-hermes.sock
 
 # 数据（配置、日志、工作区）
@@ -95,205 +109,446 @@ Hermes Gateway
   hermes/config.yaml
   hermes/.env
   hermes/logs/gateway.log
+  hermes/logs/gateway-boot.log
+  hermes/gateway.lock
+  hermes/gateway_state.json
   home/
   workspace/
-  trim.hermes.log
-  trim.hermes.pid
 
-# systemd
-/etc/systemd/system/trim-hermes-gateway.service
-/etc/systemd/system/trim-hermes-gateway.service.d/20-boot-order.conf`}</pre>
+# systemd（现行两件套）
+/etc/systemd/system/hermes-gateway-boot.service
+/usr/local/bin/hermes-gateway-boot.sh
 
-                    <p>端口约定（本机已验证，其它主机可按商店默认改，但全文需一致）：</p>
-                    <pre>{`| 组件              | 地址              | 说明                    |
-|-------------------|-------------------|-------------------------|
-| Hermes Dashboard  | 127.0.0.1:19119   | wrapper 拉起的面板      |
-| Hermes Gateway    | 127.0.0.1:18642   | 消息网关 / API 主端口   |
-| wrapper unix sock | .../run/trim-hermes.sock | App Center 通信      |`}</pre>
+# 已弃用（勿再启用）
+# /etc/systemd/system/trim-hermes-gateway.service
+# /etc/systemd/system/trim-hermes-gateway.service.d/20-boot-order.conf
+# /etc/systemd/system/hermes-dashboard.service`}</pre>
 
-                    <h2>四、根因：为什么「直接 systemd 起 Gateway」会翻车</h2>
+                    <p>端口与用户约定：</p>
+                    <pre>{`| 组件              | 地址 / 身份              | 说明 |
+|-------------------|--------------------------|------|
+| Hermes Dashboard  | 127.0.0.1:19119          | wrapper 拉起的面板 |
+| Hermes Gateway    | 127.0.0.1:18642          | 消息网关 / API |
+| wrapper unix sock | .../run/trim-hermes.sock | App Center 通信 |
+| 运行用户          | trim.hermes              | 常见 uid≈983；主组可能是 AppUsers，辅组含 trim.hermes(gid≈979) |
+| unit Group        | Group=trim.hermes        | 对齐商店运行时 gid，避免写权限漂移 |`}</pre>
+
+                    <h2>四、根因时间线：为什么旧方案会翻车</h2>
+
+                    <h3>4.1 wrapper 硬 bind 预检</h3>
                     <ol>
                         <li><code>trim_app_center</code> 拉起 <code>trim-hermes-wrapper</code>。</li>
-                        <li>wrapper 在启动 Dashboard 前执行端口预检：对 <code>:18642</code> <strong>硬绑定测试</strong>。</li>
-                        <li>若此时 systemd 已把 Gateway 绑在 <code>:18642</code>，预检失败 → 面板 502 / “could not start”。</li>
-                        <li>即便你手动再起一次 Gateway，面板生命周期仍可能认为启动失败。</li>
+                        <li>点控制面板 / ensureDashboard 时执行 <code>preflightRuntimePorts</code>：对 <code>:18642</code>（必要时也有 <code>:19119</code>）做<strong>硬 bind 探测</strong>。</li>
+                        <li>若 Gateway 已由常驻 systemd 占住 <code>:18642</code> → 预检失败 → “already in use / could not start”。</li>
+                        <li>即便 Gateway 健康、消息渠道已 connected，面板仍可能认为启动失败。</li>
                     </ol>
-                    <p>因此正确顺序是：</p>
-                    <pre>{`trim_app_center → wrapper 预检完成 → Dashboard :19119 可访问
-  → 再允许 systemd 执行 hermes gateway run
-  → Gateway :18642 LISTEN
-  → wrapper ensure 循环通过 dashboard API 发现 gateway 已在跑`}</pre>
+
+                    <h3>4.2 常驻 unit 的两个死结</h3>
+                    <ul>
+                        <li><strong>Restart=always 抢端口</strong>：unit 一直管着进程，wrapper 永远过不了 preflight。</li>
+                        <li><strong>TimeoutStartSec 与 ExecStartPre 互相打架</strong>（旧 drop-in）：Pre 循环等 Dashboard 90s，但 unit <code>TimeoutStartSec=45</code> 会提前杀掉 Pre，冷启动「等不到就兜底启动」永远触发不了。</li>
+                    </ul>
+
+                    <h3>4.3 常驻 Dashboard 也是错方向</h3>
+                    <p>有人想「先常驻 :19119 再起网关」——wrapper 点面板时两端都可能硬 bind，结果只是把红条从 <code>:18642 already in use</code> 变成 <code>:19119 already in use</code>。已否决。</p>
+
+                    <h3>4.4 正确顺序（实测成功路径）</h3>
+                    <pre>{`trim_app_center / wrapper sock 就绪
+  → （如需）短暂释放 :18642 让 preflight 能 bind-probe
+  → 经 wrapper admin 路径拉起 Dashboard（ppid 最好是 wrapper）
+  → hermes CLI: gateway run --replace --accept-hooks
+  → :18642 LISTEN + /health 200 + gateway.lock
+  → oneshot 退出；网关 ppid=1 或自管，继续活着`}</pre>
 
                     <h2>五、可复刻配置（其它主机按此落地）</h2>
 
-                    <h3>5.1 base unit（示例）</h3>
-                    <p>路径写入 <code>/etc/systemd/system/trim-hermes-gateway.service</code>。代理环境按你的出口改；没有代理可删相关行。</p>
+                    <h3>5.1 清理冲突残留（首次必做）</h3>
+                    <pre>{`# 停掉并禁用旧常驻方案（若存在）
+sudo systemctl disable --now trim-hermes-gateway.service 2>/dev/null || true
+sudo systemctl disable --now hermes-dashboard.service 2>/dev/null || true
+sudo systemctl disable --now hermes-gateway.service 2>/dev/null || true
+
+# 建议整体移走而非直接 rm
+sudo mkdir -p /root/backup/hermes-residual-$(date +%Y%m%d)
+sudo mv /etc/systemd/system/trim-hermes-gateway.service \\
+        /etc/systemd/system/trim-hermes-gateway.service.d \\
+        /etc/systemd/system/hermes-dashboard.service \\
+        /root/backup/hermes-residual-$(date +%Y%m%d)/ 2>/dev/null || true
+sudo systemctl daemon-reload`}</pre>
+
+                    <h3>5.2 oneshot unit</h3>
+                    <p>路径：<code>/etc/systemd/system/hermes-gateway-boot.service</code></p>
                     <pre>{`[Unit]
-Description=Hermes Gateway for Telegram/QQBot
-Documentation=man:systemd.service(5)
+Description=Hermes boot assist (OpenClaw-style via shop wrapper + gateway CLI)
+After=network-online.target trim_app_center.service trim_connect.service
 Wants=network-online.target
-After=network-online.target trim_connect.service
 
 [Service]
-Type=simple
+Type=oneshot
+RemainAfterExit=yes
 User=trim.hermes
 Group=trim.hermes
-WorkingDirectory=/vol1/@appdata/trim.hermes
-
-Environment=HOME=/vol1/@appdata/trim.hermes/home
-Environment=HERMES_HOME=/vol1/@appdata/trim.hermes/hermes
-Environment=PATH=/vol1/@appcenter/trim.hermes/runtime/python/bin:/vol1/@appcenter/trim.hermes/runtime/python/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-Environment=HTTP_PROXY=http://192.168.x.x:7890
-Environment=HTTPS_PROXY=http://192.168.x.x:7890
-Environment=http_proxy=http://192.168.x.x:7890
-Environment=https_proxy=http://192.168.x.x:7890
-Environment=NO_PROXY=localhost,127.0.0.1,192.168.x.0/24,::1
-Environment=no_proxy=localhost,127.0.0.1,192.168.x.0/24,::1
-
-ExecStart=/vol1/@appcenter/trim.hermes/runtime/python/bin/hermes gateway run --replace --accept-hooks
-ExecStartPost=/bin/bash -c "for i in {1..30}; do ss -lntH sport = :18642 | grep -q LISTEN && exit 0; sleep 1; done; exit 1"
-Restart=always
-RestartSec=5
-KillMode=process
-TimeoutStartSec=45
-TimeoutStopSec=20
-StandardOutput=append:/vol1/@appdata/trim.hermes/hermes/logs/gateway.log
-StandardError=append:/vol1/@appdata/trim.hermes/hermes/logs/gateway.log
+# 关键：oneshot 退出后网关必须继续活；默认 control-group 会在 stop/清理时杀子进程
+KillMode=none
+WorkingDirectory=/vol1/@appdata/trim.hermes/workspace
+# 脚本幂等：端口已起则跳过；必要时可修 Dashboard 归属
+ExecStart=/usr/local/bin/hermes-gateway-boot.sh
+TimeoutStartSec=180
 
 [Install]
 WantedBy=multi-user.target`}</pre>
 
-                    <h3>5.2 drop-in：与 wrapper 共存（核心）</h3>
-                    <p>路径：<code>/etc/systemd/system/trim-hermes-gateway.service.d/20-boot-order.conf</code></p>
-                    <pre>{`# Drop-in: coexist with trim_app_center's trim-hermes-wrapper
+                    <h3>5.3 boot 脚本（核心，完整可复用）</h3>
+                    <p>路径：<code>/usr/local/bin/hermes-gateway-boot.sh</code>，<code>chmod 755</code>，属主 root 即可（由 unit 切到 <code>trim.hermes</code> 执行）。代理地址请按你的出口修改；没有代理可保留空 fallback 或删掉相关行。</p>
+                    <pre>{`#!/bin/bash
+# Hermes boot assist — same idea as OpenClaw store bootstrap:
+# prefer shop control path so the panel is happy, then ensure gateway is up.
 #
-# Root cause:
-#   wrapper preflight hard-binds :18642. If systemd starts gateway first,
-#   panel shows "Hermes could not start" / 502.
-#
-# Fix: wait until dashboard :19119 is up (preflight finished),
-#      then start gateway; skip if :18642 already LISTEN.
+# Shop Hermes constraint:
+#   Go wrapper preflightRuntimePorts hard-binds :18642 before starting dashboard.
+#   Dashboard started by bare CLI is NOT owned by wrapper → opening panel can fail.
+#   Correct order:
+#     1) wait for wrapper sock
+#     2) ensure dashboard via wrapper admin hit (needs :18642 free at that moment)
+#     3) ensure gateway via hermes CLI (same user as shop)
+set -euo pipefail
 
-[Unit]
-After=trim_app_center.service
-Wants=trim_app_center.service
+GW_PORT=18642
+DASH_PORT=19119
+APP_ROOT=/vol1/@appcenter/trim.hermes
+HERMES_ROOT=/vol1/@appdata/trim.hermes
+HERMES_HOME=\${HERMES_ROOT}/hermes
+HOME_DIR=\${HERMES_ROOT}/home
+WORKSPACE=\${HERMES_ROOT}/workspace
+PY_BIN=\${APP_ROOT}/runtime/python/bin
+NODE_BIN=\${APP_ROOT}/runtime/python/node/bin
+HERMES_BIN=\${PY_BIN}/hermes
+PYTHON=\${PY_BIN}/python3.11.real
+ENV_FILE=\${HERMES_HOME}/.env
+LOG_DIR=\${HERMES_HOME}/logs
+LOG_FILE=\${LOG_DIR}/gateway-boot.log
+WRAPPER_SOCK=\${APP_ROOT}/run/trim-hermes.sock
 
-[Service]
-ExecCondition=/bin/bash -c '! ss -lntH sport = :18642 | grep -q LISTEN'
+mkdir -p "\${LOG_DIR}" "\${WORKSPACE}"
+chown trim.hermes:trim.hermes "\${LOG_DIR}" 2>/dev/null || true
+exec >>"\${LOG_FILE}" 2>&1
+echo "===== \$(date '+%F %T') hermes-gateway-boot start ====="
 
-ExecStartPre=/bin/bash -c 'for i in $(seq 1 90); do curl -sf -o /dev/null -m 2 http://127.0.0.1:19119/ && exit 0; sleep 1; done; echo "dashboard never came up on :19119, starting gateway anyway" >&2; exit 0'
+port_up() {
+  local p="\$1"
+  ss -lntH "sport = :\${p}" 2>/dev/null | grep -q LISTEN
+}
 
-Restart=on-failure
-TimeoutStopSec=60s`}</pre>
+wait_port() {
+  local p="\$1" label="\$2" max="\${3:-60}"
+  local i
+  for i in \$(seq 1 "\${max}"); do
+    if port_up "\${p}"; then
+      echo "\${label} ready on :\${p} after \${i}s"
+      return 0
+    fi
+    sleep 1
+  done
+  echo "ERROR: \${label} did not bind :\${p} within \${max}s"
+  return 1
+}
 
-                    <h3>5.3 启用与加载</h3>
-                    <pre>{`sudo systemctl daemon-reload
-sudo systemctl enable trim-hermes-gateway.service
-# 冷启动验证建议 reboot 一次；热验证可用：
-sudo systemctl restart trim_app_center.service
-# 待 Dashboard 起来后再：
-sudo systemctl restart trim-hermes-gateway.service`}</pre>
+export HOME="\${HOME_DIR}"
+export HERMES_HOME="\${HERMES_HOME}"
+export USER=trim.hermes
+export LOGNAME=trim.hermes
+export PATH="\${PY_BIN}:\${NODE_BIN}:\${HERMES_HOME}/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export LD_LIBRARY_PATH="\${PY_BIN}/../system-libs"
+export HERMES_MANAGED_BY=trim.hermes
+export HERMES_NODE="\${NODE_BIN}/node"
+export HERMES_WRITE_SAFE_ROOT="\${WORKSPACE}"
+export HERMES_NONINTERACTIVE=1
+export HERMES_QUIET=1
+export TRIM_APPNAME=trim.hermes
+export TRIM_APPDEST="\${APP_ROOT}"
+export TRIM_HERMES_DATA_ROOT="\${HERMES_ROOT}"
+export TRIM_PKGVAR="\${HERMES_ROOT}"
+export TRIM_UID=983
+export TRIM_GID=979
+export TRIM_USERNAME=trim.hermes
+export TRIM_GROUPNAME=trim.hermes
+export TRIM_RUN_UID=983
+export TRIM_RUN_GID=979
+export TRIM_RUN_USERNAME=trim.hermes
+export TRIM_RUN_GROUPNAME=trim.hermes
+export TRIM_SERVICE_PORT=\${DASH_PORT}
+
+if [ -f "\${ENV_FILE}" ]; then
+  set -a
+  . "\${ENV_FILE}"
+  set +a
+  echo "loaded env_file=\${ENV_FILE}"
+fi
+
+# re-pin after sourcing .env
+export HOME="\${HOME_DIR}"
+export HERMES_HOME="\${HERMES_HOME}"
+export HERMES_MANAGED_BY=trim.hermes
+export HERMES_NODE="\${NODE_BIN}/node"
+export HERMES_WRITE_SAFE_ROOT="\${WORKSPACE}"
+export PATH="\${PY_BIN}:\${NODE_BIN}:\${HERMES_HOME}/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export LD_LIBRARY_PATH="\${PY_BIN}/../system-libs"
+
+# 代理：按你的内网出口改；NO_PROXY 必须精确 IP（见第七节）
+: "\${HTTP_PROXY:=http://192.168.x.x:7890}"
+: "\${HTTPS_PROXY:=http://192.168.x.x:7890}"
+: "\${http_proxy:=\${HTTP_PROXY}}"
+: "\${https_proxy:=\${HTTPS_PROXY}}"
+: "\${NO_PROXY:=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1}"
+: "\${no_proxy:=\${NO_PROXY}}"
+export HTTP_PROXY HTTPS_PROXY http_proxy https_proxy NO_PROXY no_proxy
+
+cd "\${WORKSPACE}"
+export PWD="\${WORKSPACE}"
+export TERMINAL_CWD="\${WORKSPACE}"
+
+if [ -x "\${HERMES_BIN}" ]; then
+  HCMD=("\${HERMES_BIN}")
+else
+  HCMD=("\${PYTHON}" -m hermes_cli.main)
+fi
+echo "hermes_cmd=\${HCMD[*]}"
+
+# 0) Wait shop wrapper
+if [ ! -S "\${WRAPPER_SOCK}" ]; then
+  echo "waiting for wrapper sock"
+  for i in \$(seq 1 90); do
+    [ -S "\${WRAPPER_SOCK}" ] && break
+    sleep 1
+  done
+fi
+if [ -S "\${WRAPPER_SOCK}" ] && curl -fsS --unix-socket "\${WRAPPER_SOCK}" -m 3 http://localhost/health >/dev/null 2>&1; then
+  echo "wrapper health OK"
+else
+  echo "WARN: wrapper not healthy yet"
+fi
+
+dashboard_owned_by_wrapper() {
+  port_up "\${DASH_PORT}" || return 1
+  local dpid wpid ppid
+  dpid=\$(ss -lntp "sport = :\${DASH_PORT}" 2>/dev/null | sed -n 's/.*pid=\\([0-9]*\\).*/\\1/p' | head -1)
+  [ -n "\${dpid}" ] || return 1
+  wpid=\$(pgrep -f 'trim-hermes-wrapper' | head -1 || true)
+  [ -n "\${wpid}" ] || return 1
+  ppid=\$(awk '/^PPid:/{print \$2}' "/proc/\${dpid}/status" 2>/dev/null || true)
+  [ "\${ppid}" = "\${wpid}" ]
+}
+
+stop_gateway_briefly() {
+  echo "temporarily stopping gateway so wrapper preflight can bind-probe :\${GW_PORT}"
+  "\${HCMD[@]}" gateway stop >>"\${LOG_DIR}/gateway-boot.log" 2>&1 || true
+  local i
+  for i in \$(seq 1 20); do
+    port_up "\${GW_PORT}" || return 0
+    sleep 1
+  done
+  fuser -k "\${GW_PORT}/tcp" 2>/dev/null || true
+  sleep 1
+}
+
+start_dashboard_via_wrapper() {
+  if [ ! -S "\${WRAPPER_SOCK}" ]; then
+    echo "ERROR: no wrapper sock; cannot start shop dashboard"
+    return 1
+  fi
+  if port_up "\${GW_PORT}"; then
+    stop_gateway_briefly
+  fi
+  echo "starting dashboard via shop wrapper admin API"
+  curl -fsS --unix-socket "\${WRAPPER_SOCK}" -m 90 \\
+    -H 'X-Trim-Isadmin: true' \\
+    -o /tmp/hermes-boot-panel.html \\
+    "http://localhost/app/trim-hermes/" || true
+  if grep -q 'Hermes could not start' /tmp/hermes-boot-panel.html 2>/dev/null; then
+    echo "WARN: wrapper returned could-not-start page"
+  fi
+  wait_port "\${DASH_PORT}" dashboard 45
+}
+
+start_gateway_cli() {
+  if port_up "\${GW_PORT}"; then
+    echo "gateway :\${GW_PORT} already LISTEN — skip"
+    return 0
+  fi
+  echo "starting gateway via hermes CLI"
+  setsid "\${HCMD[@]}" gateway run --replace --accept-hooks \\
+    >>"\${LOG_DIR}/gateway.log" 2>&1 </dev/null &
+  echo "spawned gateway setsid_pid=\$!"
+  wait_port "\${GW_PORT}" gateway 60
+  if [ -f "\${HERMES_HOME}/gateway.lock" ]; then
+    echo "gateway.lock=\$(cat "\${HERMES_HOME}/gateway.lock")"
+  fi
+  curl -fsS -m 3 "http://127.0.0.1:\${GW_PORT}/health" >/dev/null 2>&1 && echo "gateway health 200"
+}
+
+# 1) Ensure dashboard
+if dashboard_owned_by_wrapper; then
+  echo "dashboard already owned by wrapper — ok"
+elif port_up "\${DASH_PORT}"; then
+  echo "dashboard on :\${DASH_PORT} but not wrapper-owned — leave as-is (do not kill UI)"
+else
+  start_dashboard_via_wrapper || {
+    echo "ERROR: failed to start shop dashboard"
+    exit 1
+  }
+fi
+
+# 2) Ensure gateway
+start_gateway_cli || {
+  echo "ERROR: failed to start gateway"
+  exit 1
+}
+
+echo "final:"
+ss -lntp "sport = :\${DASH_PORT}" 2>/dev/null | head -n 2 || true
+ss -lntp "sport = :\${GW_PORT}" 2>/dev/null | head -n 2 || true
+echo "boot assist done"
+exit 0`}</pre>
+
+                    <h3>5.4 启用与加载</h3>
+                    <pre>{`sudo install -m 755 hermes-gateway-boot.sh /usr/local/bin/hermes-gateway-boot.sh
+sudo install -m 644 hermes-gateway-boot.service /etc/systemd/system/hermes-gateway-boot.service
+sudo systemctl daemon-reload
+sudo systemctl enable hermes-gateway-boot.service
+
+# 热验证
+sudo systemctl start hermes-gateway-boot.service
+systemctl status hermes-gateway-boot.service --no-pager
+# 期望：active (exited)，且 :18642 已 LISTEN
+
+# 冷启动验证（最能暴露顺序问题）
+# sudo reboot`}</pre>
 
                     <h2>六、运行态验收矩阵（复制到其它主机）</h2>
-                    <pre>{`# 1) unit / drop-in
-systemctl cat trim-hermes-gateway.service
-systemctl is-enabled trim-hermes-gateway.service   # enabled
-systemctl is-active  trim-hermes-gateway.service   # active (running)
+                    <pre>{`# 1) unit
+systemctl cat hermes-gateway-boot.service
+systemctl is-enabled hermes-gateway-boot.service   # enabled
+systemctl is-active  hermes-gateway-boot.service   # active (exited)  ← oneshot 正常
 
-# 2) 进程角色
-# wrapper + dashboard + gateway 分属不同 PID
-ps aux | grep -E 'trim-hermes-wrapper|hermes_cli.main' | grep -v grep
+# 2) 停 unit 不得杀网关（KillMode=none 验收）
+GW_PID=$(ss -lntp 'sport = :18642' | sed -n 's/.*pid=\\([0-9]*\\).*/\\1/p' | head -1)
+echo "gateway pid before stop: $GW_PID"
+sudo systemctl stop hermes-gateway-boot.service
+sleep 2
+ss -lntH 'sport = :18642' | grep -q LISTEN && echo "gateway still up after stop unit — OK"
+curl -sf -m 3 http://127.0.0.1:18642/health && echo
 
-# 3) 端口
-ss -lntH 'sport = :19119'    # Dashboard loopback
-ss -lntH 'sport = :18642'    # Gateway loopback
+# 3) 进程角色
+pgrep -af 'trim-hermes-wrapper|hermes_cli.main|gateway run' | grep -v grep
 
-# 4) Dashboard HTTP
-curl -sf -o /dev/null -m 3 http://127.0.0.1:19119/ && echo dashboard_ok
+# 4) 端口（均 loopback）
+ss -lntH 'sport = :19119'
+ss -lntH 'sport = :18642'
 
-# 5) sock
+# 5) 健康
+curl -sf -m 3 http://127.0.0.1:18642/health
+curl -sf -o /dev/null -m 3 -w 'dashboard_%{http_code}\\n' http://127.0.0.1:19119/
+
+# 6) sock / lock / 属主
 ls -l /vol1/@appcenter/trim.hermes/run/trim-hermes.sock
-
-# 6) 属主
+ls -l /vol1/@appdata/trim.hermes/hermes/gateway.lock
 id trim.hermes
-# 数据目录属主应为 trim.hermes，而不是 root
+# HERMES_HOME 下文件属主应为 trim.hermes，不是 root
 
-# 7) 日志（只看结构，勿贴 Token）
-tail -n 50 /vol1/@appdata/trim.hermes/hermes/logs/gateway.log`}</pre>
-                    <p>通过标准：Dashboard 与 Gateway 均 loopback 监听；unit active；面板不再 502；冷启动后无需人工再点一次「启动」。</p>
+# 7) 日志（勿贴 Token）
+tail -n 80 /vol1/@appdata/trim.hermes/hermes/logs/gateway-boot.log
+tail -n 50 /vol1/@appdata/trim.hermes/hermes/logs/gateway.log
 
-                    <h2>七、日常维护清单</h2>
+# 8) 幂等：端口已占再 start 应快速 skip
+sudo systemctl start hermes-gateway-boot.service`}</pre>
+                    <p>通过标准：Dashboard 与 Gateway 均 loopback 监听；Gateway <code>/health</code> 返回 ok；oneshot 为 <code>active (exited)</code>；stop unit 后网关仍存活；冷启动后无需每次手点面板「启动网关」。</p>
 
-                    <h3>7.1 更新商店 Hermes 前</h3>
+                    <h2>七、NO_PROXY 与代理：Python 生态的硬坑</h2>
+                    <p>商店 Hermes 走 Python（httpx / OpenAI SDK）。若 Gateway 需要经内网代理访问外网 LLM，但要把内网 API（如 CLIProxyAPI、其它局域网服务）直连：</p>
+                    <ul>
+                        <li><code>HTTP(S)_PROXY</code> 指向内网出口（示例 <code>http://192.168.x.x:7890</code>）</li>
+                        <li><code>NO_PROXY</code> / <code>no_proxy</code> <strong>必须写精确 IP 列表</strong></li>
+                    </ul>
+                    <pre>{`# ✅ 正确（示例）
+NO_PROXY=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
+
+# ❌ 错误：httpx/requests 不认
+NO_PROXY=localhost,127.0.0.1,192.168.x.0/24,::1     # CIDR
+NO_PROXY=localhost,127.0.0.1,192.168.x.*,::1        # 通配
+NO_PROXY=localhost,127.0.0.1,192.168.x.,::1         # 前缀`}</pre>
+                    <p>错误症状：curl 直连内网 API 200，但 Hermes/Python 调用秒回 502——请求被错误塞给代理，代理拒绝转发内网。改 <code>hermes/.env</code> 与任何 systemd Environment 后记得重启 Gateway 再验。</p>
+
+                    <h2>八、日常维护清单</h2>
+
+                    <h3>8.1 更新商店 Hermes 前</h3>
                     <ol>
-                        <li>备份 unit + drop-in + 数据目录关键文件（见下节）。</li>
-                        <li>优先在面板停止/优雅停 Gateway，避免安装包替换时仍占用旧文件。</li>
-                        <li>更新后检查 drop-in 是否被商店安装覆盖；若覆盖，重新放下 <code>20-boot-order.conf</code> 并 <code>daemon-reload</code>。</li>
+                        <li>备份 unit + 脚本 + <code>config.yaml</code> / <code>.env</code>（见下）。</li>
+                        <li>优先用 Hermes CLI / 面板优雅停 Gateway，避免安装包替换时占用旧文件。</li>
+                        <li>更新后检查 oneshot 两件套是否被覆盖；路径、runtime 是否变化。</li>
+                        <li>再 <code>daemon-reload && systemctl start hermes-gateway-boot</code> 做热验收，必要时 reboot 冷验收。</li>
                     </ol>
 
-                    <h3>7.2 建议备份范围</h3>
-                    <pre>{`/etc/systemd/system/trim-hermes-gateway.service
-/etc/systemd/system/trim-hermes-gateway.service.d/20-boot-order.conf
+                    <h3>8.2 建议备份范围</h3>
+                    <pre>{`/etc/systemd/system/hermes-gateway-boot.service
+/usr/local/bin/hermes-gateway-boot.sh
 /vol1/@appdata/trim.hermes/hermes/config.yaml
 /vol1/@appdata/trim.hermes/hermes/.env          # 含密钥，离线加密保存
-# 可选：workspace / state，视你是否需要会话连续性`}</pre>
+# 可选：workspace / state，视是否需要会话连续性`}</pre>
 
-                    <h3>7.3 代理与 NO_PROXY</h3>
-                    <p>若 Gateway 需要经内网代理访问外网 LLM/渠道，请同时配置：</p>
-                    <ul>
-                        <li><code>HTTP(S)_PROXY</code> 指向内网出口</li>
-                        <li><code>NO_PROXY</code> 必须包含 <code>localhost,127.0.0.1</code> 与内网网段，避免把 Dashboard/loopback 请求拐走</li>
-                    </ul>
-
-                    <h3>7.4 权限铁律</h3>
+                    <h3>8.3 权限铁律</h3>
                     <ul>
                         <li>不要用 root 长期写 <code>HERMES_HOME</code> 下配置/会话文件。</li>
                         <li>修复后统一：<code>chown -R trim.hermes:trim.hermes /vol1/@appdata/trim.hermes</code>（确认路径后再执行）。</li>
+                        <li>unit 使用 <code>User=trim.hermes</code> 且 <code>Group=trim.hermes</code>（辅组 gid 与商店运行时对齐）。</li>
                         <li>禁止把另一套 Hermes/OpenClaw 的 HOME 挂到本实例目录。</li>
                     </ul>
 
-                    <h3>7.5 日志与重启策略</h3>
+                    <h3>8.4 职责边界（避免再踩）</h3>
                     <ul>
-                        <li>base unit 若写 <code>Restart=always</code>，建议由 drop-in 改为 <code>on-failure</code>，减少 clean exit / 面板停服时的无意义重启。</li>
-                        <li>网关日志路径：<code>.../hermes/logs/gateway.log</code>；商店侧还有 <code>trim.hermes.log</code>。</li>
-                        <li>渠道断线重连（如 QQBot websocket 4009）属渠道侧常见现象，与启动顺序无关；单独看渠道配置与网络。</li>
+                        <li>oneshot：开机代拉 / 幂等补齐，不长期独占抢面板。</li>
+                        <li>Dashboard <code>:19119</code>：归商店 wrapper。</li>
+                        <li>Gateway <code>:18642</code>：原生 CLI + lock，Hermes 自管。</li>
+                        <li>与 OpenClaw 完全独立（端口/用户/进程谱系均无重叠）。</li>
                     </ul>
 
-                    <h2>八、排错速查</h2>
-                    <pre>{`| 现象                         | 优先检查                                      | 处置思路 |
-|------------------------------|-----------------------------------------------|----------|
-| 面板 502 / could not start   | 启动瞬间 :18642 是否被 systemd 抢占           | 加强 After + ExecStartPre 等 Dashboard |
-| unit failed / start timeout  | Dashboard 是否 90s 内未起；磁盘卷是否未挂载   | 查 trim_app_center、卷就绪、延长等待 |
-| ExecCondition 失败直接跳过   | 已有进程占用 :18642                           | ss/lsof 查占用；确认是否要复用已有进程 |
-| 权限 denied / 配置写不进     | 目录属主是否被 root 污染                      | chown 回 trim.hermes                 |
-| 外网可通但面板异常           | 是否把 Gateway 绑到了 0.0.0.0 且与预检冲突    | 保持 loopback；外网走反代            |
-| 冷启动偶发失败、热启动正常   | After= 是否漏了 trim_app_center               | 补 drop-in 并 reboot 验证            |`}</pre>
+                    <h2>九、排错速查</h2>
+                    <pre>{`| 现象 | 优先检查 | 处置思路 |
+|------|----------|----------|
+| 面板 already in use :18642 | 是否有常驻 unit/野进程占端口；Dashboard 是否 wrapper 子进程 | 禁掉常驻 unit；必要时脚本短暂 gateway stop 再走 wrapper |
+| 面板 already in use :19119 | 是否误启常驻 dashboard unit | disable 并移走 hermes-dashboard.service |
+| oneshot 成功但 stop 后网关死了 | unit 是否漏 KillMode=none | 补 KillMode=none 并 daemon-reload |
+| unit start timeout | wrapper sock 未起；卷未挂载；TimeoutStartSec 过短 | After=trim_app_center；TimeoutStartSec≥180；查 gateway-boot.log |
+| Gateway 502 / 内网 API 秒失败 | NO_PROXY 是否 CIDR/通配 | 改精确 IP；验 Python 侧直连 |
+| 权限 denied / 配置写不进 | 目录被 root 污染 | chown 回 trim.hermes |
+| 冷启动偶发失败、热启动正常 | App Center / wrapper 未就绪 | 脚本内等 sock；After= 补齐；reboot 回归 |
+| 点面板仍红但 /health 200 | wrapper preflight 不认外部已起 api_server | 倾向保自启；或接受先点面板；勿再 Restart=always |`}</pre>
 
-                    <h2>九、与商店版 OpenClaw 的对照（方便一套运维习惯）</h2>
-                    <pre>{`| 维度           | Hermes（本文）                         | OpenClaw（旧文）                              |
-|----------------|----------------------------------------|-----------------------------------------------|
-| 商店用户       | trim.hermes                            | trim.openclaw                                 |
-| 面板/控制面    | wrapper + Dashboard :19119             | Monitor unix sock + API                       |
-| 业务端口       | Gateway :18642                         | Gateway :25730                                |
-| systemd 角色   | 条件等待后直接 gateway run             | oneshot bootstrap → Monitor API action=start  |
-| 跳过条件       | :18642 已 LISTEN                       | :25730 已 LISTEN                              |
-| drop-in 名字   | 20-boot-order.conf                     | 20-boot-order.conf                            |
-| 共同原则       | App Center 先就绪；不抢端口；loopback；独立用户 | 同左 |`}</pre>
+                    <h2>十、与商店版 OpenClaw 的对照</h2>
+                    <pre>{`| 维度 | Hermes（本文） | OpenClaw（姊妹文） |
+|------|----------------|--------------------|
+| 商店用户 | trim.hermes | trim.openclaw |
+| 控制面 | wrapper unix sock + Dashboard :19119 | Monitor unix sock + API |
+| 业务端口 | Gateway :18642 | Gateway :25730（示例） |
+| systemd 角色 | oneshot 脚本：wrapper 路径 + 原生 CLI 点火 | oneshot bootstrap：Monitor API action=start |
+| 禁止项 | 常驻 Restart=always 监管 :18642；常驻抢 :19119 | ensure 直拉 Gateway 与面板抢进程 |
+| 跳过条件 | :18642 已 LISTEN 则 skip | 业务端口已 LISTEN 则 skip |
+| 共同原则 | App Center 先就绪；不长期抢端口；loopback；独立用户；可冷启动复刻 | 同左 |`}</pre>
 
-                    <h2>十、其它主机最小复刻步骤（Checklist）</h2>
+                    <h2>十一、其它主机最小复刻 Checklist</h2>
                     <ol>
-                        <li>商店安装 Hermes，确认用户 <code>trim.hermes</code> 与路径映射存在。</li>
-                        <li>确认默认端口：Dashboard <code>19119</code>、Gateway <code>18642</code>（若不同，全文替换）。</li>
-                        <li>写入 base unit + drop-in，<code>daemon-reload && enable</code>。</li>
-                        <li>配置代理 / <code>NO_PROXY</code>（如需要）。</li>
-                        <li><strong>reboot</strong> 做冷启动验证（比热重启更能暴露顺序问题）。</li>
-                        <li>跑第六节验收矩阵，全部打勾再投入生产。</li>
-                        <li>把 unit/drop-in 与密钥配置纳入备份计划。</li>
+                        <li>商店安装 Hermes，确认用户 <code>trim.hermes</code> 与 <code>@appcenter / @appdata</code> 路径映射。</li>
+                        <li>确认端口：Dashboard <code>19119</code>、Gateway <code>18642</code>（不同则全文替换）。</li>
+                        <li>清理旧常驻 <code>trim-hermes-gateway*</code> / <code>hermes-dashboard*</code>。</li>
+                        <li>写入 <code>hermes-gateway-boot.service</code> + <code>hermes-gateway-boot.sh</code>，改代理与 <code>NO_PROXY</code> 精确 IP。</li>
+                        <li><code>chmod 755</code> 脚本，<code>daemon-reload && enable</code>。</li>
+                        <li>热启动验收第六节矩阵（含 stop unit 不杀网关）。</li>
+                        <li><strong>reboot</strong> 冷启动验收。</li>
+                        <li>两件套 + 密钥配置纳入备份；更新商店后复查路径与 unit。</li>
                     </ol>
 
-                    <h2>十一、结语</h2>
-                    <p>商店版 Hermes 的稳定关键，不在于「多写一个 restart」，而在于<strong>尊重 wrapper 的端口预检时序</strong>。用 Dashboard 就绪作为信号、用端口占用作为跳过条件，就能让 systemd 与 App Center 共存，而不是互抢。把 unit、drop-in、路径和验收矩阵按本文固化后，换一台 FnOS 也可以在一小时内复刻出相同效果。</p>
-                    <p>若你同时维护商店版 OpenClaw，建议两套 drop-in 一起备份、一起做冷启动回归，避免只修一侧、重启后另一侧回归翻车。</p>
+                    <h2>十二、结语</h2>
+                    <p>商店版 Hermes 的稳定关键，不在于「多写一个 Restart=always」，而在于<strong>尊重 wrapper 的硬 bind 预检，并让 systemd 只做开机协助</strong>。oneshot + <code>KillMode=none</code> + 商店同用户原生 CLI，能在冷启动后自动带起 Gateway，又尽量不和 App Center 抢生命周期。把 unit、脚本、NO_PROXY 精确 IP 与验收矩阵按本文固化后，换一台 FnOS 也可以完整复刻同一运行环境。</p>
+                    <p>若你同时维护商店版 OpenClaw，建议两套 oneshot 引导一起备份、一起做冷启动回归，避免只修一侧、重启后另一侧回归翻车。</p>
 
                 </div>
             </div>
