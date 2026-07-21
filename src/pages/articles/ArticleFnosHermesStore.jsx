@@ -68,17 +68,19 @@ systemd oneshot: hermes-gateway-boot.service （enabled）
     3) 若 :18642 未 LISTEN → setsid hermes gateway run --replace --accept-hooks
     4) 写 gateway.lock / gateway_state.json；health 200 后 exit 0
     5) 不再常驻监管；stop unit 不得杀已 detached 的网关
+       （RemainAfterExit=yes 时 process 可能仍显示在 unit cgroup 下，但 PPid 可为 1；以 stop 后是否存活验收）
 
 Hermes Gateway
   → 127.0.0.1:18642
   → HERMES_HOME=/vol1/@appdata/trim.hermes/hermes
   → 原生指纹：python3.11.real -m hermes_cli.main gateway run --replace --accept-hooks
+  → Dashboard 理想态：ppid = trim-hermes-wrapper；Gateway 理想态：ppid=1 自管
 `}</pre>
 
                     <p>关键设计原则：</p>
                     <ul>
                         <li><strong>oneshot 点火，不常驻监管</strong>：长期 <code>Restart=always</code> 占着 <code>:18642</code> 必撞 preflight。</li>
-                        <li><strong>KillMode=none</strong>：oneshot 退出/stop 时默认 control-group 会杀子进程；网关必须继续活。</li>
+                        <li><strong>KillMode=none</strong>：oneshot 退出/stop 时默认 control-group 会杀子进程；网关必须继续活。systemd 会告警 deprecation，但当前仍是让网关存活的必要项；勿改回 control-group。</li>
                         <li><strong>Dashboard 归商店 wrapper</strong>：不要另起常驻 <code>hermes-dashboard.service</code>（只会把碰撞从 18642 挪到 19119）。</li>
                         <li><strong>Gateway 归 Hermes 原生 lock</strong>：同用户、同 CLI、同状态文件，商店后续可识别/接管。</li>
                         <li><strong>先尽量满足 wrapper，再起 Gateway</strong>：必要时短暂释放 <code>:18642</code> 让 preflight 过。</li>
@@ -130,7 +132,7 @@ Hermes Gateway
 | Hermes Dashboard  | 127.0.0.1:19119          | wrapper 拉起的面板 |
 | Hermes Gateway    | 127.0.0.1:18642          | 消息网关 / API |
 | wrapper unix sock | .../run/trim-hermes.sock | App Center 通信 |
-| 运行用户          | trim.hermes              | 常见 uid≈983；主组可能是 AppUsers，辅组含 trim.hermes(gid≈979) |
+| 运行用户          | trim.hermes              | 主组常见为 AppUsers，辅组含 trim.hermes；uid/gid 以 `id trim.hermes` 为准 |
 | unit Group        | Group=trim.hermes        | 对齐商店运行时 gid，避免写权限漂移 |`}</pre>
 
                     <h2>四、根因时间线：为什么旧方案会翻车</h2>
@@ -191,7 +193,7 @@ Group=trim.hermes
 # 关键：oneshot 退出后网关必须继续活；默认 control-group 会在 stop/清理时杀子进程
 KillMode=none
 WorkingDirectory=/vol1/@appdata/trim.hermes/workspace
-# 脚本幂等：端口已起则跳过；必要时可修 Dashboard 归属
+# 脚本幂等：端口已起则跳过；始终跑一遍以便必要时修 Dashboard 归属
 ExecStart=/usr/local/bin/hermes-gateway-boot.sh
 TimeoutStartSec=180
 
@@ -199,6 +201,7 @@ TimeoutStartSec=180
 WantedBy=multi-user.target`}</pre>
 
                     <h3>5.3 boot 脚本（核心，完整可复用）</h3>
+                    <p>脚本里的 <code>X-Trim-Isadmin: true</code> 是飞牛商店 wrapper 的本地 admin 头，用于触发控制入口拉起 Dashboard；<strong>不是</strong> API Token/密钥，可写在文档里。</p>
                     <p>路径：<code>/usr/local/bin/hermes-gateway-boot.sh</code>，<code>chmod 755</code>，属主 root 即可（由 unit 切到 <code>trim.hermes</code> 执行）。代理地址请按你的出口修改；没有代理可保留空 fallback 或删掉相关行。</p>
                     <pre>{`#!/bin/bash
 # Hermes boot assist — same idea as OpenClaw store bootstrap:
@@ -268,12 +271,12 @@ export TRIM_APPNAME=trim.hermes
 export TRIM_APPDEST="\${APP_ROOT}"
 export TRIM_HERMES_DATA_ROOT="\${HERMES_ROOT}"
 export TRIM_PKGVAR="\${HERMES_ROOT}"
-export TRIM_UID=983
-export TRIM_GID=979
+export TRIM_UID=\$(id -u trim.hermes)
+export TRIM_GID=\$(getent group trim.hermes | cut -d: -f3)
 export TRIM_USERNAME=trim.hermes
 export TRIM_GROUPNAME=trim.hermes
-export TRIM_RUN_UID=983
-export TRIM_RUN_GID=979
+export TRIM_RUN_UID=\${TRIM_UID}
+export TRIM_RUN_GID=\${TRIM_GID}
 export TRIM_RUN_USERNAME=trim.hermes
 export TRIM_RUN_GROUPNAME=trim.hermes
 export TRIM_SERVICE_PORT=\${DASH_PORT}
@@ -294,7 +297,7 @@ export HERMES_WRITE_SAFE_ROOT="\${WORKSPACE}"
 export PATH="\${PY_BIN}:\${NODE_BIN}:\${HERMES_HOME}/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 export LD_LIBRARY_PATH="\${PY_BIN}/../system-libs"
 
-# 代理：按你的内网出口改；NO_PROXY 必须精确 IP（见第七节）
+# 代理：按你的内网出口改；NO_PROXY 必须精确 IP（见第八节）
 : "\${HTTP_PROXY:=http://192.168.x.x:7890}"
 : "\${HTTPS_PROXY:=http://192.168.x.x:7890}"
 : "\${http_proxy:=\${HTTP_PROXY}}"
@@ -826,7 +829,7 @@ tail -n 50 /vol1/@appdata/trim.hermes/hermes/logs/gateway.log
 
 # 8) 幂等：端口已占再 start 应快速 skip
 sudo systemctl start hermes-gateway-boot.service`}</pre>
-                    <p>通过标准：Dashboard 与 Gateway 均 loopback 监听；Gateway <code>/health</code> 返回 ok；oneshot 为 <code>active (exited)</code>；stop unit 后网关仍存活；冷启动后无需每次手点面板「启动网关」。</p>
+                    <p>通过标准：Dashboard 与 Gateway 均 loopback 监听；Gateway <code>/health</code> 返回 ok；oneshot 为 <code>active (exited)</code>；stop unit 后网关仍存活；冷启动后无需每次手点面板「启动网关」。附加：<code>ss</code> 看 Dashboard 监听进程的 PPid 最好等于 <code>trim-hermes-wrapper</code>；Gateway 的 PPid 可为 1。systemd 对 <code>KillMode=none</code> 的 deprecation 告警可忽略（当前必要）。</p>
 
                     <h2>八、NO_PROXY 与代理：Python 生态的硬坑</h2>
                     <p>商店 Hermes 走 Python（httpx / OpenAI SDK）。若 Gateway 需要经内网代理访问外网 LLM，但要把内网 API（如 CLIProxyAPI、其它局域网服务）直连：</p>
