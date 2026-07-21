@@ -13,9 +13,9 @@ export default function ArticleFnosOpenClawStore() {
                 <A href="/articles" class="back-link">← 返回文章列表</A>
                 <div class="article-header">
                     <h1>飞牛系统商店版 OpenClaw 优化实战：Monitor API 开机引导、状态修复、备份复用与更新按钮</h1>
-                    <p class="article-subtitle">FnOS App Center · trim.openclaw · bootstrap 引导 · Gateway loopback · 权限隔离 · 一键备份恢复</p>
+                    <p class="article-subtitle">FnOS App Center · trim.openclaw · bootstrap 引导 · 一键安装脚本 · Gateway loopback · 权限隔离 · 一键备份恢复</p>
                     <div class="article-meta">
-                        <span class="article-date">2026-07-20</span>
+                        <span class="article-date">2026-07-21</span>
                         <div class="article-tags">
                             <span class="tech-tag">FnOS</span>
                             <span class="tech-tag">OpenClaw</span>
@@ -31,6 +31,7 @@ export default function ArticleFnosOpenClawStore() {
                     <h2>一、写在前面：本文解决什么问题</h2>
                     <p>飞牛系统（FnOS）商店版 OpenClaw 的运行方式与普通 Docker 部署不同。它不是直接由 root 启动一个裸进程，而是由 FnOS App Center 管理应用包，再由商店版 Monitor 启动 OpenClaw Gateway。本文记录完整的商店版优化过程：反向定位运行路径、修复开机自启、根治 root Monitor 残留、修复控制面板卡“启动中”、梳理“检查更新”按钮逻辑，并沉淀可一键还原或迁移的备份方案。</p>
                     <p><strong>2026-07-20 修订说明：</strong>早期文章使用 <code>openclaw-ensure.service</code> 在 Monitor 就绪后由 systemd 直接 <code>runuser</code> 拉起 Gateway。现行稳定方案已演进为 <code>trim-openclaw-gateway.service</code> + drop-in + <code>trim-openclaw-bootstrap.sh</code>：只等待商店 Monitor 的 unix socket API ready，再通过 <code>POST /app/trim-openclaw/api/install</code> 的 <code>action=start</code> 让 <strong>Monitor 自己</strong> 拉起 Gateway。这样生命周期完全落在 App Center 范式内，避免 ensure 与面板抢进程。旧 ensure 方案保留为第六节反面教材短节。</p>
+                    <p><strong>2026-07-21 修订说明：</strong>对齐 Hermes 增强文的「从零到可跑」体验，新增第六节 <code>6.7</code> 一键安装脚本 <code>install-openclaw-gateway-boot.sh</code>：在已商店安装 <code>trim.openclaw</code> 的前提下，root 一条命令写入 base unit + drop-in + bootstrap、清理旧 ensure、enable/start 并做 30 秒自检。NO_PROXY 示范改为<strong>精确 IP 列表</strong>（勿写 CIDR/通配），避免 Node/httpx 等运行时不认网段导致内网请求被代理拐走。全量数据迁移仍走第十三节备份还原，与一键 boot 职责分离。</p>
                     <p>若同一台 FnOS 还要并行<strong>自装第二实例</strong>，见 <A href="/article/fnos-openclaw-dual-instance">FnOS 双 OpenClaw 实例并存实战</A>。本文只覆盖商店版（实例 A）。</p>
                     <p>本文所有域名、Token、真实内网地址均做脱敏。示例中的 <code>example.com</code>、<code>192.168.x.x</code>、<code>&lt;TOKEN&gt;</code> 请替换为你自己的环境。商店用户名 <code>trim.openclaw</code> 为 FnOS 常见约定，可按实际保留。</p>
 
@@ -141,7 +142,7 @@ Gateway:
   配置：/vol1/@apphome/trim.openclaw/data/home/.openclaw/openclaw.json
   环境要点：HOME / OPENCLAW_DATA_DIR / OPENCLAW_CONFIG_PATH
   可选代理：HTTP(S)_PROXY=http://192.168.x.x:7890
-            NO_PROXY=localhost,127.0.0.1,192.168.x.0/24,::1
+            NO_PROXY=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
 
 辅助脚本（可选）：
   /usr/local/sbin/trim-openclaw-gateway-start.sh  # 手工/排障拉 Gateway，非开机主路径
@@ -423,7 +424,7 @@ Environment=PATH=/vol1/@apphome/trim.openclaw/data/openclaw/node_modules/.bin:/v
 # 可选代理（无代理则删除）
 Environment=HTTP_PROXY=http://192.168.x.x:7890
 Environment=HTTPS_PROXY=http://192.168.x.x:7890
-Environment=NO_PROXY=localhost,127.0.0.1,192.168.x.0/24,::1
+Environment=NO_PROXY=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
 # 下列 ExecStart 会被 drop-in 清空；仅作「无 drop-in 时」的兜底语义
 ExecCondition=/bin/bash -c "! ss -lntH sport = :25730 | grep -q LISTEN"
 ExecStart=/vol1/@apphome/trim.openclaw/data/openclaw/node_modules/.bin/openclaw gateway run --port 25730 --bind loopback
@@ -448,6 +449,245 @@ WantedBy=multi-user.target`}</pre>
                     <pre>{`ps -eo user,pid,cmd | grep -E 'server/index.js|openclaw-gateway|openclaw gateway' | grep -v grep
 # 错误：出现 root 用户的 Monitor 或双 Monitor
 # 正确：Monitor 与 Gateway 均为 trim.openclaw；仅一个 :25730`}</pre>
+
+                    <h3>6.7 从零到可跑：一键安装脚本（其它主机直接复刻）</h3>
+                    <p>第六节前面是「分步理解 + 手工落地」。若你只想在<strong>已商店安装 trim.openclaw</strong> 的 FnOS 上，把开机引导一次写齐，可用下面脚本（对齐 Hermes 文第六节体验）。</p>
+                    <p>脚本会：检查商店用户与路径 → 备份并禁用旧 <code>openclaw-ensure*</code>（若有）→ 写入 base unit + <code>20-boot-order.conf</code> + <code>trim-openclaw-bootstrap.sh</code> → <code>daemon-reload</code> / enable / start 一次 → 最小验收。它<strong>不</strong>代替商店安装，<strong>不</strong>写入 sessions/token/完整 <code>openclaw.json</code>（那是第十三节全量备份还原的事），也<strong>不</strong>触碰自装实例 <code>openclaw-11751*</code>。</p>
+                    <p><strong>执行前请改顶部变量：</strong></p>
+                    <ol>
+                        <li><code>APP_CENTER</code> / <code>APP_HOME</code>：卷名与商店路径不同时改这里。</li>
+                        <li><code>GW_PORT</code>：默认 <code>25730</code>。</li>
+                        <li><code>HTTP_PROXY_DEFAULT</code> / <code>HTTPS_PROXY_DEFAULT</code>：无代理写成空字符串 <code>""</code>。</li>
+                        <li><code>NO_PROXY_DEFAULT</code>：写成<strong>精确 IP</strong>，禁止 CIDR/通配。</li>
+                    </ol>
+                    <pre>{`#!/bin/bash
+# install-openclaw-gateway-boot.sh
+# FnOS 商店版 OpenClaw 开机 bootstrap 一键落地
+# 要求：已在 App Center 安装 trim.openclaw；以 root 运行
+set -euo pipefail
+
+# ========== 按环境修改 ==========
+APP_CENTER=/vol1/@appcenter/trim.openclaw
+APP_HOME=/vol1/@apphome/trim.openclaw
+GW_PORT=25730
+# 无代理：两行写成 ""
+HTTP_PROXY_DEFAULT="http://192.168.x.x:7890"
+HTTPS_PROXY_DEFAULT="http://192.168.x.x:7890"
+# 精确 IP，勿用 CIDR/通配
+NO_PROXY_DEFAULT="localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1"
+# ========== 一般不用改 ==========
+SOCK=\${APP_CENTER}/trim.openclaw.sock
+DATA=\${APP_HOME}/data
+HOME_DIR=\${DATA}/home
+OPENCLAW_DIR=\${DATA}/openclaw
+RUNTIME_DIR=\${DATA}/runtime
+UNIT=/etc/systemd/system/trim-openclaw-gateway.service
+DROPIN_DIR=/etc/systemd/system/trim-openclaw-gateway.service.d
+DROPIN=\${DROPIN_DIR}/20-boot-order.conf
+BOOTSTRAP=/usr/local/sbin/trim-openclaw-bootstrap.sh
+BACKUP_DIR=/root/backup/openclaw-boot-\$(date +%Y%m%d-%H%M%S)
+
+die() { echo "ERROR: \$*" >&2; exit 1; }
+need() { command -v "\$1" >/dev/null 2>&1 || die "缺少命令: \$1"; }
+
+[ "\$(id -u)" -eq 0 ] || die "请用 root 执行"
+need ss; need curl; need systemctl; need install; need timeout
+
+id trim.openclaw >/dev/null 2>&1 || die "用户 trim.openclaw 不存在（请先商店安装 OpenClaw）"
+[ -d "\${APP_CENTER}" ] || die "APP_CENTER 不存在: \${APP_CENTER}"
+[ -d "\${APP_HOME}" ] || die "APP_HOME 不存在: \${APP_HOME}"
+[ -d "\${OPENCLAW_DIR}" ] || die "OPENCLAW_DIR 不存在: \${OPENCLAW_DIR}（商店安装可能未完成）"
+[ -x /var/apps/bunjs/target/bin/bun ] || die "找不到 bun（/var/apps/bunjs/target/bin/bun）"
+
+echo "==> 1) 备份并禁用冲突 ensure unit（不碰 openclaw-11751*）"
+mkdir -p "\${BACKUP_DIR}"
+for u in openclaw-ensure openclaw-gateway-ensure; do
+  systemctl disable --now "\${u}.service" 2>/dev/null || true
+done
+for f in \\
+  /etc/systemd/system/openclaw-ensure.service \\
+  /etc/systemd/system/openclaw-gateway-ensure.service \\
+  /usr/local/sbin/openclaw-ensure.sh \\
+  /usr/local/bin/openclaw-ensure.sh
+do
+  [ -e "\$f" ] && mv "\$f" "\${BACKUP_DIR}/" || true
+done
+[ -d /etc/systemd/system/openclaw-ensure.service.d ] \\
+  && mv /etc/systemd/system/openclaw-ensure.service.d "\${BACKUP_DIR}/" || true
+for f in "\${UNIT}" "\${DROPIN}" "\${BOOTSTRAP}"; do
+  [ -e "\$f" ] && cp -a "\$f" "\${BACKUP_DIR}/" || true
+done
+
+echo "==> 2) 准备 runtime 目录（bootstrap mktemp 用）"
+install -d -o trim.openclaw -g trim.openclaw -m 0750 "\${RUNTIME_DIR}"
+
+echo "==> 3) 写入 base unit: \${UNIT}"
+install -d -m 755 /etc/systemd/system
+cat > "\${UNIT}" <<EOF
+[Unit]
+Description=Bootstrap Trim OpenClaw Gateway Once at Boot
+Documentation=man:systemd.service(5)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=trim.openclaw
+Group=trim.openclaw
+WorkingDirectory=\${OPENCLAW_DIR}
+
+Environment=HOME=\${HOME_DIR}
+Environment=OPENCLAW_DATA_DIR=\${DATA}
+Environment=OPENCLAW_CONFIG_PATH=\${HOME_DIR}/.openclaw/openclaw.json
+Environment=OPENCLAW_HIDE_BANNER=1
+Environment=PATH=\${OPENCLAW_DIR}/node_modules/.bin:/var/apps/bunjs/target/bin:/var/apps/nodejs_v24/target/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=HTTP_PROXY=\${HTTP_PROXY_DEFAULT}
+Environment=HTTPS_PROXY=\${HTTPS_PROXY_DEFAULT}
+Environment=http_proxy=\${HTTP_PROXY_DEFAULT}
+Environment=https_proxy=\${HTTPS_PROXY_DEFAULT}
+Environment=NO_PROXY=\${NO_PROXY_DEFAULT}
+Environment=no_proxy=\${NO_PROXY_DEFAULT}
+
+# 无 drop-in 时的兜底语义；装好 drop-in 后会被清空，真正执行 bootstrap
+ExecCondition=/bin/bash -c "! ss -lntH sport = :\${GW_PORT} | grep -q LISTEN"
+ExecStart=\${OPENCLAW_DIR}/node_modules/.bin/openclaw gateway run --port \${GW_PORT} --bind loopback
+Restart=no
+KillMode=process
+TimeoutStartSec=75
+TimeoutStopSec=20
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "==> 4) 写入 drop-in: \${DROPIN}"
+install -d -m 755 "\${DROPIN_DIR}"
+cat > "\${DROPIN}" <<EOF
+[Unit]
+After=network-online.target trim_app_center.service
+Before=
+
+[Service]
+Type=oneshot
+ExecCondition=
+ExecStart=
+ExecStart=\${BOOTSTRAP}
+ExecStartPost=
+Restart=no
+TimeoutStartSec=120
+StandardOutput=journal
+StandardError=journal
+RemainAfterExit=no
+EOF
+
+echo "==> 5) 写入 bootstrap: \${BOOTSTRAP}"
+# 引号 heredoc 避免安装时展开 $(seq)/$(mktemp)；再用 sed 注入路径/端口
+cat > "\${BOOTSTRAP}" <<'EOS'
+#!/bin/sh
+set -eu
+
+socket=__SOCK__
+health_url=http://localhost/app/trim-openclaw/api/health
+start_url=http://localhost/app/trim-openclaw/api/install
+gw_port=__GW_PORT__
+runtime_dir=__RUNTIME_DIR__
+
+# 残留 socket inode 不等于 Monitor 已就绪
+monitor_ready=0
+for _ in $(seq 1 90); do
+  if [ -S "$socket" ] && timeout 3 curl --unix-socket "$socket" -fsS "$health_url" >/dev/null 2>&1; then
+    monitor_ready=1
+    break
+  fi
+  sleep 1
+done
+
+if [ "$monitor_ready" -ne 1 ]; then
+  echo "OpenClaw store monitor API did not become ready within 90 seconds" >&2
+  exit 1
+fi
+
+if ss -lntH sport = :$gw_port | grep -q LISTEN; then
+  echo "OpenClaw store gateway already listens on $gw_port; bootstrap skipped"
+  exit 0
+fi
+
+result=$(mktemp "$runtime_dir/trim-openclaw-bootstrap.XXXXXX")
+trap 'rm -f "$result"' EXIT HUP INT TERM
+
+if ! timeout 90 curl --unix-socket "$socket" -fsS -N \\
+  -X POST -H "Content-Type: application/json" \\
+  --data-binary '{"action":"start","instanceId":"default"}' \\
+  "$start_url" | tee "$result"; then
+  echo "OpenClaw store monitor start request failed" >&2
+  exit 1
+fi
+
+if grep -q '"event":"complete"' "$result" && grep -q '"success":true' "$result"; then
+  echo "OpenClaw store gateway bootstrap completed"
+  exit 0
+fi
+
+if grep -q '"event":"error"' "$result"; then
+  echo "OpenClaw store monitor reported a startup error" >&2
+else
+  echo "OpenClaw store monitor returned no successful completion event" >&2
+fi
+exit 1
+EOS
+
+sed -i \\
+  -e "s|__SOCK__|\${SOCK}|g" \\
+  -e "s|__GW_PORT__|\${GW_PORT}|g" \\
+  -e "s|__RUNTIME_DIR__|\${RUNTIME_DIR}|g" \\
+  "\${BOOTSTRAP}"
+chmod 755 "\${BOOTSTRAP}"
+
+echo "==> 6) enable + start 一次"
+systemctl daemon-reload
+systemctl enable trim-openclaw-gateway.service
+systemctl start trim-openclaw-gateway.service || true
+
+echo "==> 7) 30 秒自检"
+sleep 2
+echo -n "unit enabled: "; systemctl is-enabled trim-openclaw-gateway.service || true
+echo -n "unit active:  "; systemctl is-active trim-openclaw-gateway.service || true
+systemctl show -p Result -p ExecMainStatus trim-openclaw-gateway.service --no-pager || true
+if ss -lntH "sport = :\${GW_PORT}" | grep -q LISTEN; then
+  echo "OK: gateway listens on :\${GW_PORT}"
+else
+  echo "WARN: :\${GW_PORT} 未监听；若 Monitor 未起，请先开商店面板或查 journalctl -u trim-openclaw-gateway"
+fi
+if [ -S "\${SOCK}" ] && timeout 3 curl --unix-socket "\${SOCK}" -fsS http://localhost/app/trim-openclaw/api/health >/dev/null 2>&1; then
+  echo "OK: monitor health via unix socket"
+else
+  echo "WARN: monitor health 未通（sock=\${SOCK}）"
+fi
+ps -eo user,pid,cmd | grep -E 'server/index.js|openclaw-gatewa|openclaw gateway' | grep -v grep || true
+echo "备份目录: \${BACKUP_DIR}"
+echo "完成。期望：Gateway=trim.openclaw @ 127.0.0.1:\${GW_PORT}；bootstrap unit 可为 inactive(dead)+Result=success；无 root Monitor。"`}</pre>
+
+                    <h4>6.7.1 一键安装后的 30 秒自检</h4>
+                    <pre>{`systemctl is-enabled trim-openclaw-gateway.service   # enabled
+systemctl is-active  trim-openclaw-gateway.service   # inactive (dead) 亦可
+systemctl show -p Result -p ExecMainStatus trim-openclaw-gateway.service
+ss -lntH | grep 25730
+curl --unix-socket /vol1/@appcenter/trim.openclaw/trim.openclaw.sock -fsS \\
+  http://localhost/app/trim-openclaw/api/health
+ps -eo user,pid,cmd | grep -E 'trim.openclaw|server/index.js|openclaw-gatewa' | grep -v grep
+# 正确：Monitor 与 Gateway 均为 trim.openclaw；仅一个 :25730
+# 错误：出现 root 用户的 Monitor`}</pre>
+
+                    <h4>6.7.2 卸载 / 回滚（只卸开机引导，不卸商店）</h4>
+                    <pre>{`systemctl disable --now trim-openclaw-gateway.service 2>/dev/null || true
+rm -f /etc/systemd/system/trim-openclaw-gateway.service
+rm -rf /etc/systemd/system/trim-openclaw-gateway.service.d
+rm -f /usr/local/sbin/trim-openclaw-bootstrap.sh
+systemctl daemon-reload
+# 商店 App / 数据目录保留；Gateway 仍可由面板手动 start
+# 若有 6.7 脚本生成的备份：/root/backup/openclaw-boot-YYYYMMDD-HHMMSS/`}</pre>
+                    <p>装完后若只关心「冷启动自动有 Gateway」，到此即可。全量会话/配置迁移请继续用第十三节备份还原脚本。自装第二实例请看 <A href="/article/fnos-openclaw-dual-instance">双实例文</A>，不要用本脚本去管 <code>:11751</code>。</p>
 
                     <h2>七、权限统一：复刻成功的关键</h2>
                     <p><strong>这是整套方案最容易踩坑、也最必须强调的部分：</strong>商店版 OpenClaw 的运行用户不是 root，而是 FnOS 为商店应用创建的独立用户 <code>trim.openclaw</code>。如果用 root 运行过安装、更新或修复命令，很容易把 <code>node_modules</code>、<code>.openclaw</code>、<code>sessions</code>、<code>runtime</code> 等目录污染成 root 属主，最终导致商店版进程读写失败、更新失败、会话不可写，或者出现“root 版能跑、商店版不能跑”的混乱状态。</p>
@@ -773,6 +1013,8 @@ cli.banner.taglineMode = "off"`}</pre>
 
                     <h2>十二、复刻步骤总览</h2>
                     <p>在另一台 FnOS 设备复刻商店版优化时，推荐顺序：</p>
+                    <p><strong>省事路径：</strong>商店安装完成后，改第六节 <code>6.7</code> 一键脚本顶部变量，root 执行整段即可落地开机引导，再按 6.7.1 自检。</p>
+                    <p><strong>理解路径（分步）：</strong></p>
 
                     <pre>{`# 1. App Center 安装飞牛 OpenClaw，确认用户与目录
 id trim.openclaw
@@ -793,7 +1035,8 @@ curl --unix-socket /vol1/@appcenter/trim.openclaw/trim.openclaw.sock -fsS \
 chown -R trim.openclaw:trim.openclaw /vol1/@apphome/trim.openclaw/data
 # 敏感配置目录保持 700/640 基线（见第七节）
 
-# 5. 安装 bootstrap + unit + drop-in
+# 5a. 推荐：第六节 6.7 一键 install-openclaw-gateway-boot.sh
+# 5b. 或手工：bootstrap + unit + drop-in
 install -m 0755 trim-openclaw-bootstrap.sh /usr/local/sbin/trim-openclaw-bootstrap.sh
 # 放置 trim-openclaw-gateway.service 与 20-boot-order.conf
 systemctl daemon-reload
@@ -809,7 +1052,8 @@ ps -eo user,pid,cmd | grep -E 'trim.openclaw|server/index.js|openclaw-gateway' |
 # 7. 期望
 # - Gateway: trim.openclaw @ 127.0.0.1:25730
 # - bootstrap unit: inactive (dead) + success
-# - 无 root Monitor`}</pre>
+# - 无 root Monitor
+# - NO_PROXY 为精确 IP，不是 CIDR`}</pre>
 
                     <h2>十三、完整备份、一键还原与新机复用</h2>
                     <p>修复完成后，建议立即做一份完整备份。本文环境最终备份位于：</p>
@@ -897,7 +1141,7 @@ systemd：openclaw-11751.service
 # 详见双实例文，勿用商店 bootstrap 去管 11751`}</pre>
 
                     <h3>8. 代理导致内网管理口异常</h3>
-                    <p>若 unit 配置了 <code>HTTP_PROXY</code>，访问本机/内网管理 API 可能被拐走。为 loopback 与内网网段配置 <code>NO_PROXY</code>；注意部分运行时不认 CIDR，需写精确 IP。</p>
+                    <p>若 unit 配置了 <code>HTTP_PROXY</code>，访问本机/内网管理 API 可能被拐走。务必配置 <code>NO_PROXY</code> / <code>no_proxy</code>：写成<strong>精确 IP 列表</strong>（含 loopback、本机、内网 API、代理网关本身），<strong>禁止 CIDR / 通配 / 前缀</strong>。curl 认 CIDR，但 Node / Python httpx 等常不认，会导致请求被错误打进代理再 502。示例：<code>localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1</code>。</p>
 
                     <h2>十五、最终效果</h2>
                     <p>完成优化后，你会得到更稳、更符合商店范式的 OpenClaw：</p>
@@ -910,9 +1154,11 @@ systemd：openclaw-11751.service
 ✅ 禁止 root 起 Monitor；权限基线可复刻
 ✅ 更新链路可检查：商店插件 → 渠道插件 → 基底
 ✅ 备份清单对齐 bootstrap unit/脚本
+✅ 6.7 一键脚本可从零落地开机引导（与第十三节全量还原职责分离）
+✅ NO_PROXY 精确 IP，避免代理拐走内网
 ✅ 与同机自装实例边界清晰（见双实例文）`}</pre>
 
-                    <p>这套方案的关键不是“把 OpenClaw 跑起来”，而是让它符合 FnOS 商店应用的运行范式：程序归 App Center，数据归 @apphome，权限归独立用户，Gateway 不直接暴露，开机引导只委托不越权，升级有顺序、有日志、可回滚。迁移到另一台设备时，按目录、用户、Monitor API、bootstrap unit、权限基线逐项复刻即可。</p>
+                    <p>这套方案的关键不是“把 OpenClaw 跑起来”，而是让它符合 FnOS 商店应用的运行范式：程序归 App Center，数据归 @apphome，权限归独立用户，Gateway 不直接暴露，开机引导只委托不越权，升级有顺序、有日志、可回滚。迁移到另一台设备时：商店装好后优先跑第六节 <code>6.7</code> 一键 boot；需要整机会话与配置时再走第十三节还原；按目录、用户、Monitor API、bootstrap unit、权限基线逐项验收即可。</p>
                     <p>推荐阅读：</p>
                     <ol>
                         <li>本文：商店版优化与开机引导</li>
