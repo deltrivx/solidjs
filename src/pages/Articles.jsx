@@ -10,11 +10,11 @@ export default function Articles() {
 
     const articles = [
         {
-            title: '飞牛系统商店版 Hermes 启动优化实战：与 App Center 共存的 systemd 引导',
-            subtitle: 'trim.hermes · wrapper 预检 · Dashboard :19119 · Gateway :18642 · drop-in 冷启动',
-            date: '2026-07-20',
-            tags: ['FnOS', 'Hermes', 'systemd', 'App Center', 'Gateway', '维护'],
-            summary: '记录商店版 Hermes 与 trim-hermes-wrapper 抢端口导致面板 502 的根因，给出可复用的 systemd unit + 20-boot-order drop-in：先等 Dashboard 就绪再起 Gateway，端口已占用则跳过。附路径、验收矩阵、备份与排错，便于其它 FnOS 主机复刻。',
+            title: '飞牛系统商店版 Hermes 开机引导实战：oneshot 点火 + wrapper 共存（可完整复刻）',
+            subtitle: 'trim.hermes · oneshot · KillMode=none · Dashboard :19119 · Gateway :18642 · NO_PROXY 精确 IP',
+            date: '2026-07-21',
+            tags: ['FnOS', 'Hermes', 'systemd', 'App Center', 'Gateway', 'oneshot', '维护'],
+            summary: '2026-07-21 修订：废弃常驻 trim-hermes-gateway + drop-in。现行 oneshot 点火（hermes-gateway-boot）：同用户走 wrapper 路径尽量保住 Dashboard，再原生 CLI 起 Gateway；KillMode=none 保证 stop unit 不杀网关。含完整 unit/脚本、NO_PROXY 精确 IP 坑、验收矩阵与冷启动复刻清单。',
             slug: 'fnos-hermes-store-boot'
         },
         {
