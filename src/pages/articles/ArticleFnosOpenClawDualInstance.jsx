@@ -13,9 +13,9 @@ export default function ArticleFnosOpenClawDualInstance() {
                 <A href="/articles" class="back-link">← 返回文章列表</A>
                 <div class="article-header">
                     <h1>FnOS 双 OpenClaw 实例并存实战：商店版 + 自装版隔离、端口与 systemd 复刻</h1>
-                    <p class="article-subtitle">trim.openclaw · openclaw-user · loopback 端口隔离 · Monitor/Gateway 双链路 · 权限分用户</p>
+                    <p class="article-subtitle">trim.openclaw · openclaw-user · loopback 端口隔离 · config-guard · 一键 boot 交叉链 · Monitor/Gateway 双链路</p>
                     <div class="article-meta">
-                        <span class="article-date">2026-07-19</span>
+                        <span class="article-date">2026-07-21</span>
                         <div class="article-tags">
                             <span class="tech-tag">FnOS</span>
                             <span class="tech-tag">OpenClaw</span>
@@ -39,7 +39,8 @@ export default function ArticleFnosOpenClawDualInstance() {
                         <li><strong>实例 B（自装版）</strong>：独立目录、独立端口、独立 systemd，适合试验升级、第二通道、与商店生命周期解耦。</li>
                     </ul>
                     <p>只装一套时问题简单；两套并存时，真正会翻车的是：抢端口、root 污染权限、配置/session 串目录、代理把 loopback 拐走、Monitor 停不了自己的 unit、冷启动卷未就绪导致 209/STDOUT。</p>
-                    <p>本文记录一套可复刻的双实例方案：路径、用户、端口、systemd、Monitor、代理与隔离清单。商店版「如何跑稳」的完整细节见旧文 <A href="/article/fnos-openclaw-store-optimization">飞牛系统商店版 OpenClaw 优化实战</A>；本文以<strong>双实例共存与自装版从零落地</strong>为主，商店版只给对照与核对清单。</p>
+                    <p>本文记录一套可复刻的双实例方案：路径、用户、端口、systemd、Monitor、代理与隔离清单。商店版「如何跑稳」的完整细节见 <A href="/article/fnos-openclaw-store-optimization">飞牛系统商店版 OpenClaw 优化实战</A>（含 <strong>6.7 一键安装开机引导</strong>）；本文以<strong>双实例共存与自装版从零落地</strong>为主，商店版只给对照与核对清单。</p>
+                    <p><strong>2026-07-21 修订说明：</strong>（1）商店侧交叉链到旧文 6.7 <code>install-openclaw-gateway-boot.sh</code>，复刻实例 A 时优先一键落地 bootstrap，勿再手抄 ensure 反面教材；（2）自装实例 B 增补 <code>ensureDevModeConfig</code> 冲配置根因与防护：Monitor 在 system 模式下误写 <code>openclaw.json</code> 只剩 <code>gateway.controlUi</code> 残片 → Gateway exit 78；落地 <code>OPENCLAW_USE_SYSTEM_CONFIG=1</code> / skip 补丁、启动前 <code>config-guard</code>、NO_PROXY 精确 IP。</p>
 
                     <h2>二、目标架构</h2>
                     <pre>{`┌─────────────────────────────── 同一台 FnOS ───────────────────────────────┐
@@ -96,7 +97,7 @@ openclaw-group    → 该用户主组（示例 Users）
 192.168.x.x:7890  → 你的内网代理（没有可删代理环境变量）`}</pre>
 
                     <h2>四、实例 A（商店版）— 双实例视角核对清单</h2>
-                    <p>商店版完整启动链、权限基线、更新按钮逻辑见旧文。这里只列<strong>双实例场景下必须确认</strong>的点：</p>
+                    <p>商店版完整启动链、权限基线、更新按钮逻辑见旧文 <A href="/article/fnos-openclaw-store-optimization">商店版优化实战</A>。复刻实例 A 的开机引导时，优先用旧文 <strong>第六节 6.7</strong> 一键脚本 <code>install-openclaw-gateway-boot.sh</code>（root 一条命令写 unit + drop-in + bootstrap），不要再手抄旧的 <code>openclaw-ensure</code>。这里只列<strong>双实例场景下必须确认</strong>的点：</p>
                     <pre>{`# 1) 商店用户存在
 id trim.openclaw
 
@@ -111,12 +112,12 @@ ps -o user,pid,cmd -C openclaw-gateway 2>/dev/null || \\
 echo "$OPENCLAW_CONFIG_PATH"   # 期望含 @apphome/trim.openclaw
 # 或从 unit / 进程环境读取`}</pre>
 
-                    <h3>4.1 商店 Gateway 兜底：端口已占用则跳过</h3>
-                    <p>若你为商店版准备了 systemd 兜底，务必加「端口已被 App Center 占用则跳过」的条件，避免双进程抢 <code>:25730</code>：</p>
+                    <h3>4.1 商店 Gateway 兜底：优先一键 bootstrap，端口已占用则跳过</h3>
+                    <p>推荐直接跑旧文 6.7 一键脚本落地 <code>trim-openclaw-gateway.service</code> + <code>trim-openclaw-bootstrap.sh</code>（Monitor API <code>action=start</code>，端口已 LISTEN 则 exit 0）。若你手工写 unit，务必加「端口已被 App Center 占用则跳过」的条件，避免双进程抢 <code>:25730</code>：</p>
                     <pre>{`# unit 片段示意（User=trim.openclaw）
 ExecCondition=/bin/bash -c "! ss -lntH sport = :25730 | grep -q LISTEN"
 ExecStart=.../openclaw gateway run --port 25730 --bind loopback`}</pre>
-                    <p>更稳的做法是 oneshot bootstrap：等商店 Monitor 的 unix socket API ready，再 POST start；若端口已 LISTEN 则直接 exit 0。不要在 root 下直接 <code>cmd/main start</code> 拉起 Monitor，否则会污染为 root Monitor（旧文已强调）。</p>
+                    <p>更稳的做法就是旧文 6.7 / 第六节现行方案：oneshot bootstrap 等商店 Monitor unix socket API ready，再 POST start；若端口已 LISTEN 则直接 exit 0。不要在 root 下直接 <code>cmd/main start</code> 拉起 Monitor，否则会污染为 root Monitor（旧文已强调）。一键脚本<strong>不会</strong>触碰 <code>openclaw-11751*</code>，与实例 B 边界安全。</p>
 
                     <h3>4.2 与自装版的边界</h3>
                     <ul>
@@ -164,8 +165,8 @@ OPENCLAW_CONFIG_PATH=/volX/OpenClaw/home/.openclaw/openclaw.json
 OPENCLAW_HIDE_BANNER=1
 HTTP_PROXY=http://192.168.x.x:7890
 HTTPS_PROXY=http://192.168.x.x:7890
-NO_PROXY=localhost,127.0.0.1,192.168.x.0/24,::1
-# 注意：部分运行时（如 Python urllib）不认 CIDR 形式的 NO_PROXY
+NO_PROXY=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
+# 必须精确 IP：Node / Python httpx 等不认 CIDR/通配/前缀；curl 认 CIDR 会掩盖问题
 # 若还有 sidecar 同步脚本访问内网管理口，请额外写精确 IP`}</pre>
 
                     <h3>5.4 Gateway systemd unit</h3>
@@ -190,7 +191,7 @@ Environment=OPENCLAW_CONFIG_PATH=/volX/OpenClaw/home/.openclaw/openclaw.json
 Environment=OPENCLAW_HIDE_BANNER=1
 Environment=HTTP_PROXY=http://192.168.x.x:7890
 Environment=HTTPS_PROXY=http://192.168.x.x:7890
-Environment=NO_PROXY=localhost,127.0.0.1,192.168.x.0/24,::1
+Environment=NO_PROXY=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
 StandardOutput=append:/volX/OpenClaw/log/gateway.log
 StandardError=append:/volX/OpenClaw/log/gateway.log
 NoNewPrivileges=true
@@ -201,30 +202,36 @@ InaccessiblePaths=/vol1/@apphome/trim.openclaw /vol1/@appcenter/trim.openclaw /v
 WantedBy=multi-user.target`}</pre>
 
                     <h3>5.5 推荐 drop-in</h3>
-                    <pre>{`# 00-requires-mounts.conf  —— 避免卷未挂载时 append 日志失败 (209/STDOUT)
+                    <p>除权限与挂载外，建议再补两类 drop-in（2026-07 实战后强烈建议）：</p>
+                    <pre>{`# /etc/systemd/system/openclaw-11751.service.d/00-requires-mounts.conf
 [Unit]
-After=network-online.target
 RequiresMountsFor=/volX/OpenClaw /volX/OpenClaw/log
 
-# 01-log-prepare.conf
+# /etc/systemd/system/openclaw-11751.service.d/01-log-prepare.conf
 [Unit]
 Requires=openclaw-11751-log-prepare.service
 After=openclaw-11751-log-prepare.service
 
-# 05-permission-fix.conf  —— 启动前统一属主（防止 root 污染残留）
+# /etc/systemd/system/openclaw-11751.service.d/05-permission-fix.conf
 [Service]
 PermissionsStartOnly=true
 ExecStartPre=/usr/local/sbin/openclaw-11751-permission-fix.sh
 
-# 10-node-path.conf
+# /etc/systemd/system/openclaw-11751.service.d/06-config-guard.conf
 [Service]
-Environment=PATH=/var/apps/nodejs_v24/target/bin:/var/apps/bunjs/target/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# 启动前校验 openclaw.json；坏配置自动从 last-good 恢复（见 5.10）
+ExecStartPre=/usr/local/sbin/openclaw-11751-config-guard.sh
 
-# 20-exec-via-bash.conf  —— 某些环境下直接 exec 包装脚本不稳定
+# /etc/systemd/system/openclaw-11751.service.d/15-noproxy-exact.conf
+[Service]
+# 覆盖 base unit 里可能写的 CIDR；精确 IP only
+Environment=NO_PROXY=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
+Environment=no_proxy=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
+
+# /etc/systemd/system/openclaw-11751.service.d/20-exec-via-bash.conf （若 CLI 为 shell 包装）
 [Service]
 ExecStart=
 ExecStart=/bin/bash /volX/OpenClaw/bin/openclaw gateway run --port 11751 --bind loopback`}</pre>
-
                     <h3>5.6 log-prepare oneshot</h3>
                     <pre>{`# /etc/systemd/system/openclaw-11751-log-prepare.service
 [Unit]
@@ -273,7 +280,13 @@ Environment=OPENCLAW_VERSION=2026.7.1
 Environment=OPENCLAW_USE_SYSTEM_CONFIG=1
 Environment=OPENCLAW_SYSTEM_UNIT=openclaw-11751.service
 InaccessiblePaths=/vol1/@apphome/trim.openclaw /vol1/@appcenter/trim.openclaw /var/apps/trim.openclaw`}</pre>
-                    <p>若 Monitor 需要 stop/start Gateway，给 <code>openclaw-user</code> 做<strong>窄授权</strong>即可（polkit 或 sudoers），只允许操作 <code>openclaw-11751.service</code>，不要给 ALL：</p>
+                    <p>Monitor 侧务必同时设置（可放 unit 或 drop-in <code>20-system-managed.conf</code>）：</p>
+                    <pre>{`Environment=OPENCLAW_USE_SYSTEM_CONFIG=1
+Environment=OPENCLAW_SYSTEM_UNIT=openclaw-11751.service
+# 同样建议精确 NO_PROXY（与 Gateway 一致）
+Environment=NO_PROXY=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1
+Environment=no_proxy=localhost,127.0.0.1,192.168.x.2,192.168.x.5,192.168.x.10,::1`}</pre>
+                    <p>有这两项时，Monitor 应<strong>跳过</strong> <code>ensureDevModeConfig()</code> 对完整 <code>openclaw.json</code> 的改写；否则可能在读失败时只写出 <code>gateway.controlUi</code> 残片（见 5.10）。若 Monitor 需要 stop/start Gateway，给 <code>openclaw-user</code> 做<strong>窄授权</strong>即可（polkit 或 sudoers），只允许操作 <code>openclaw-11751.service</code>，不要给 ALL：</p>
                     <pre>{`# /etc/sudoers.d/openclaw-11751-openclaw-user  （示例，visudo 语法）
 openclaw-user ALL=(root) NOPASSWD: /bin/systemctl start openclaw-11751.service, \\
   /bin/systemctl stop openclaw-11751.service, \\
@@ -288,6 +301,113 @@ sudo systemctl enable --now openclaw-11751-monitor.service   # 若有
 ss -lntH | grep -E '11751|25730'
 curl -fsS http://127.0.0.1:11751/healthz || true`}</pre>
 
+                    <h3>5.10 配置防冲：ensureDevModeConfig 坑 + config-guard（必做）</h3>
+                    <p><strong>现象：</strong>自装 Gateway 突然 failed，日志：</p>
+                    <pre>{`Gateway start blocked: existing config is missing gateway.mode.
+Treat this as suspicious or clobbered config.`}</pre>
+                    <p>进程 exit 78/CONFIG；<code>:11751</code> 无监听。此时查配置文件体积往往只剩约 <strong>300 字节</strong>，内容类似：</p>
+                    <pre>{`{
+  "gateway": {
+    "controlUi": {
+      "enabled": true,
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true,
+      "allowedOrigins": ["http://localhost:3000", "http://127.0.0.1:3000"]
+    }
+  }
+}`}</pre>
+                    <p>完整配置（通常十几 KB，含 <code>gateway.mode=local</code>、<code>channels</code>、<code>agents</code>、<code>models</code>）被冲掉。商店实例 <code>:25730</code> 可仍正常——问题只在自装 Monitor 写到了实例 B 的 <code>openclaw.json</code>。</p>
+                    <p><strong>根因：</strong>自建 Monitor（<code>server/index.js</code>）里的 <code>ensureDevModeConfig()</code> 在 system 模式下仍会改「系统配置」。当读配置失败/得到空对象时，旧逻辑会把只含 <code>gateway.controlUi</code> 的残片<strong>写回</strong>同一路径，覆盖完整文件。日志侧可看到：</p>
+                    <pre>{`[dev-config] Updated system OpenClaw config at .../openclaw.json
+# 随后 gateway 反复：
+Config write audit / size-drop-vs-last-good: ~17000 -> ~298`}</pre>
+                    <p><strong>防护（三层，建议全上）：</strong></p>
+                    <ol>
+                        <li><strong>Monitor 环境变量</strong>（见 5.8）：<code>OPENCLAW_USE_SYSTEM_CONFIG=1</code> + <code>OPENCLAW_SYSTEM_UNIT=openclaw-11751.service</code>。</li>
+                        <li><strong>代码补丁</strong>（Monitor 源码 <code>ensureDevModeConfig</code>）：system-managed 时直接 skip；且仅当已有 <code>gateway.mode=local</code> 才允许改 controlUi。示意：</li>
+                    </ol>
+                    <pre>{`async function ensureDevModeConfig() {
+  // system-managed 实例拥有完整 openclaw.json，禁止用 controlUi 残片覆盖
+  if (process.env.OPENCLAW_USE_SYSTEM_CONFIG === "1" || process.env.OPENCLAW_SYSTEM_UNIT) {
+    console.log("[dev-config] Skipping ensureDevModeConfig for system-managed OpenClaw");
+    return;
+  }
+  // ... 读取 config 后：
+  if (!config?.gateway || config.gateway.mode !== "local") {
+    console.error("[dev-config] Refusing to patch: missing gateway.mode=local");
+    return;
+  }
+  // 仅在已有完整 local 配置上合并 controlUi 字段
+}`}</pre>
+                    <p>3. <strong>启动前 config-guard</strong>（Gateway unit 的 <code>ExecStartPre</code>）：校验当前配置；坏则从 <code>openclaw.json.last-good</code>（或你自己的 bak）恢复。健康启动成功后顺便刷新 last-good。</p>
+                    <pre>{`# /usr/local/sbin/openclaw-11751-config-guard.sh
+#!/bin/bash
+set -euo pipefail
+CFG_DIR=/volX/OpenClaw/home/.openclaw
+CFG="$CFG_DIR/openclaw.json"
+LAST_GOOD="$CFG_DIR/openclaw.json.last-good"
+# 可再列一份你信任的历史 bak
+BAK="$CFG_DIR/openclaw.json.bak-known-good"
+LOG=/volX/OpenClaw/log/config-guard.log
+mkdir -p /volX/OpenClaw/log
+
+ok_mode() {
+  local f="$1"
+  [ -f "$f" ] || return 1
+  python3 - "$f" <<'PY'
+import json, sys
+d=json.load(open(sys.argv[1], encoding="utf-8"))
+g=d.get("gateway") or {}
+if g.get("mode") != "local":
+  sys.exit(1)
+if int(g.get("port") or 0) != 11751:  # 按你的端口改
+  sys.exit(1)
+if "channels" not in d or "meta" not in d:
+  sys.exit(1)
+sys.exit(0)
+PY
+}
+
+if ok_mode "$CFG"; then
+  if ! cmp -s "$CFG" "$LAST_GOOD" 2>/dev/null; then
+    cp -a "$CFG" "$LAST_GOOD"
+    chown openclaw-user:openclaw-group "$LAST_GOOD"
+    chmod 600 "$LAST_GOOD"
+  fi
+  echo "$(date '+%F %T') config ok" >>"$LOG"
+  exit 0
+fi
+
+echo "$(date '+%F %T') BAD config; restoring" >>"$LOG"
+cp -a "$CFG" "$CFG_DIR/openclaw.json.broken-auto-$(date +%Y%m%d-%H%M%S)" 2>/dev/null || true
+for src in "$LAST_GOOD" "$BAK"; do
+  if ok_mode "$src"; then
+    cp -a "$src" "$CFG"
+    chown openclaw-user:openclaw-group "$CFG"
+    chmod 600 "$CFG"
+    echo "$(date '+%F %T') restored from $src" >>"$LOG"
+    exit 0
+  fi
+done
+echo "$(date '+%F %T') FATAL: no valid backup" >>"$LOG"
+exit 1`}</pre>
+                    <pre>{`install -m 0755 openclaw-11751-config-guard.sh /usr/local/sbin/
+# drop-in 见 5.5 的 06-config-guard.conf
+# 建议平时保留：
+#   openclaw.json.last-good
+#   至少一份带时间戳的 bak（升级/改模型前手动 cp）`}</pre>
+                    <p><strong>验收：</strong>Monitor 日志出现 <code>Skipping ensureDevModeConfig for system-managed...</code>；人为把配置改成残片后 <code>systemctl restart openclaw-11751</code> 应被 guard 自动救回；正常时 <code>openclaw.json</code> 体积保持完整量级，且 <code>gateway.mode=local</code>。</p>
+                    <p><strong>恢复应急（无 guard 时）：</strong></p>
+                    <pre>{`# 1) 停 gateway
+sudo systemctl stop openclaw-11751
+# 2) 从 last-good / 备份恢复
+cp -a .../openclaw.json.last-good .../openclaw.json
+chown openclaw-user:openclaw-group .../openclaw.json
+# 3) 确认 JSON：gateway.mode=local、port=11751
+# 4) 先给 Monitor 打上 skip 补丁与环境变量，再 start
+sudo systemctl start openclaw-11751
+curl -fsS http://127.0.0.1:11751/healthz`}</pre>
+
                     <h2>六、双实例共存硬隔离清单</h2>
                     <pre>{`| 检查项     | 命令/标准                                      | 通过标准                          |
 |------------|------------------------------------------------|-----------------------------------|
@@ -296,8 +416,11 @@ curl -fsS http://127.0.0.1:11751/healthz || true`}</pre>
 | 配置路径   | 两进程 OPENCLAW_CONFIG_PATH                    | 路径不同、目录不共享              |
 | 互不可见   | systemctl cat B | grep InaccessiblePaths       | 含商店版路径                      |
 | 重启隔离   | systemctl restart openclaw-11751               | A 的 25730 不掉线                 |
-| 代理       | 进程环境 HTTP_PROXY / NO_PROXY                 | 管理口/loopback 不被错误代理      |
-| 权限       | namei -l 数据目录                              | 无 root 属主污染                  |`}</pre>
+| 代理       | 进程环境 HTTP_PROXY / NO_PROXY                 | 精确 IP；禁止 CIDR/通配           |
+| 权限       | namei -l 数据目录                              | 无 root 属主污染                  |
+| 配置完整   | wc -c openclaw.json；含 gateway.mode=local     | 非 ~300B controlUi 残片           |
+| system 标记| Monitor 环境 OPENCLAW_USE_SYSTEM_CONFIG=1      | ensureDevModeConfig 应 skip       |
+| config-guard | ExecStartPre 存在且 Result=success           | 坏配置可自动从 last-good 恢复     |`}</pre>
 
                     <h2>七、通道、插件与共享能力</h2>
                     <ul>
@@ -308,17 +431,17 @@ curl -fsS http://127.0.0.1:11751/healthz || true`}</pre>
                     </ul>
 
                     <h2>八、另一台设备复刻步骤总览</h2>
-                    <pre>{`# 1. 先落地实例 A（商店版）—— 按旧文
+                    <pre>{`# 1. 先落地实例 A（商店版）—— 旧文 6.7 一键 install-openclaw-gateway-boot.sh
 # 2. 建 openclaw-user 与 /volX/OpenClaw 目录树，修权限
 # 3. 安装固定版本 OpenClaw 到 data/，写 bin/openclaw
-# 4. 初始化 openclaw.json（渠道后续再配），确认 CLI 可读配置
-# 5. 安装 log-prepare / permission-fix / gateway unit / drop-in
-# 6. enable --now Gateway；验证 :11751
-# 7. （可选）Monitor + 窄 sudoers/polkit
-# 8. 核对 :25730 与 :11751 同时在线
-# 9. 只 restart B，确认 A 不受影响
-# 10. 冷启动一次（reboot 或至少 umount/mount 模拟卷就绪顺序）
-# 11. 打备份 manifest（不含 secrets）`}</pre>
+# 4. 初始化完整 openclaw.json（gateway.mode=local + port）；保留 last-good
+# 5. 安装 log-prepare / permission-fix / config-guard / gateway unit / drop-in
+# 6. enable --now Gateway；验证 :11751 healthz
+# 7. Monitor：OPENCLAW_USE_SYSTEM_CONFIG=1 + OPENCLAW_SYSTEM_UNIT + ensureDevModeConfig skip 补丁
+# 8. 窄 sudoers/polkit；精确 NO_PROXY
+# 9. 核对 :25730 与 :11751 同时在线
+# 10. 只 restart B，确认 A 不受影响；人为残片配置测 guard 恢复
+# 11. 冷启动一次；打备份 manifest（不含 secrets）`}</pre>
 
                     <h2>九、验证矩阵</h2>
                     <pre>{`| 场景                 | 操作                              | 期望结果                    |
@@ -329,7 +452,9 @@ curl -fsS http://127.0.0.1:11751/healthz || true`}</pre>
 | 只停 B               | systemctl stop openclaw-11751     | A 仍可对话                  |
 | 冷启动               | 开机后检查 unit                   | RequiresMountsFor 后成功    |
 | 升级 B               | 仅更新 /volX/OpenClaw/data        | A 版本号不变                |
-| 权限污染演练         | 误用 root touch 文件后 fix 脚本   | 服务可再启动                |`}</pre>
+| 权限污染演练         | 误用 root touch 文件后 fix 脚本   | 服务可再启动                |
+| 配置残片演练         | 故意写成仅 controlUi 后 restart B | guard 从 last-good 恢复     |
+| Monitor skip         | 日志含 Skipping ensureDevMode...  | 不再 Updated system config  |`}</pre>
 
                     <h2>十、备份与一键还原（公开可说的部分）</h2>
                     <pre>{`# 建议分两份包：store-A / selfhost-B
@@ -350,10 +475,10 @@ scripts/              # permission-fix / bootstrap / auto-update
 sudo -u openclaw-user -H env HOME=... OPENCLAW_CONFIG_PATH=... openclaw ...`}</pre>
                     <h3>3. Monitor 停不了 service</h3>
                     <p>system mode 下 Monitor 以普通用户调 systemctl 会要 polkit。补窄 polkit/sudoers，只放开自己的 unit。</p>
-                    <h3>4. 重启后 port not ready / 配置被改写</h3>
-                    <p>等待端口时做连续多次 stable check；system mode 下避免 Monitor 每次改 <code>openclaw.json</code> 触发 Gateway 自重启抖动。</p>
+                    <h3>4. 重启后 port not ready / 配置被改写 / exit 78</h3>
+                    <p>若日志是 <code>missing gateway.mode</code> 或配置只剩 ~300B controlUi，就是 5.10 的 <code>ensureDevModeConfig</code> 冲配置。立刻从 last-good 恢复，再上 skip 补丁 + config-guard，不要反复 restart 空转。日常：等待端口时做连续多次 stable check；system mode 下禁止 Monitor 每次改完整 <code>openclaw.json</code>。</p>
                     <h3>5. 代理拐走内网管理口</h3>
-                    <p><code>HTTP_PROXY</code> 存在时，访问 <code>192.168.x.x</code> 管理 API 可能 502。给精确 IP 进 <code>NO_PROXY</code>；注意部分语言不认 CIDR。</p>
+                    <p><code>HTTP_PROXY</code> 存在时，访问 <code>192.168.x.x</code> 管理 API 可能 502。给<strong>精确 IP</strong>进 <code>NO_PROXY</code>/<code>no_proxy</code>（含 loopback、本机、内网 API、代理网关），禁止 CIDR/通配/前缀。curl 认 CIDR 会掩盖 Node/httpx 的 502。</p>
                     <h3>6. 开机 209/STDOUT</h3>
                     <p>日志目录所在卷未就绪。加 <code>RequiresMountsFor=</code> + log-prepare oneshot。</p>
                     <h3>7. 把 Docker 版和商店版混谈</h3>
@@ -366,12 +491,15 @@ sudo -u openclaw-user -H env HOME=... OPENCLAW_CONFIG_PATH=... openclaw ...`}</p
 ✅ 冷启动有卷就绪与日志准备
 ✅ 权限脚本可从 root 污染中拉回
 ✅ 升级分通道，可独立回滚
-✅ 另一台设备可按清单复刻，而不是「凭记忆拼」`}</pre>
-                    <p>这套方案的关键不是「再装一个 OpenClaw」，而是把<strong>隔离契约</strong>写进 systemd 与目录规范：端口、用户、路径、InaccessiblePaths、升级通道。商店版负责「符合 App Center 范式」；自装版负责「可独立运维的第二生命线」。两者并存时，先保证边界，再谈插件与通道。</p>
+✅ 另一台设备可按清单复刻，而不是「凭记忆拼」
+✅ 实例 A 开机引导可走旧文 6.7 一键脚本，不碰 11751
+✅ 实例 B：ensureDevModeConfig skip + config-guard + last-good，防冲配置
+✅ NO_PROXY 精确 IP，两边一致`}</pre>
+                    <p>这套方案的关键不是「再装一个 OpenClaw」，而是把<strong>隔离契约</strong>写进 systemd 与目录规范：端口、用户、路径、InaccessiblePaths、升级通道，以及<strong>配置所有权</strong>（谁可以写 <code>openclaw.json</code>）。商店版负责「符合 App Center 范式」——优先旧文 6.7 一键 boot；自装版负责「可独立运维的第二生命线」——Monitor 不得用 controlUi 残片覆盖完整配置。两者并存时，先保证边界与配置守卫，再谈插件与通道。</p>
                     <p>推荐阅读顺序：</p>
                     <ol>
-                        <li><A href="/article/fnos-openclaw-store-optimization">商店版 OpenClaw 优化实战</A></li>
-                        <li>本文：双实例并存与自装版复刻</li>
+                        <li><A href="/article/fnos-openclaw-store-optimization">商店版 OpenClaw 优化实战</A>（含 6.7 一键开机引导）</li>
+                        <li>本文：双实例并存、自装版复刻与配置防冲</li>
                         <li><A href="/article/memory-embed-ollama">记忆 / Embedding 本地化</A>（多实例共享 Ollama 时）</li>
                         <li><A href="/article/tunnel-dualstack-full-guide">双栈隧道统一入口</A>（外网暴露面板时）</li>
                     </ol>
