@@ -55,7 +55,7 @@ render(
           <Route path="/projects" component={() => <RouteWithMeta title="DeltrivX | 精选项目" desc="DeltrivX 引以为豪的作品展示" Component={Projects} />} />
           <Route path="/articles" component={() => <RouteWithMeta title="DeltrivX | 实战" desc="DeltrivX 分享的技术文章与思考" Component={Articles} />} />
           <Route path="/article/fnos-openclaw-dual-instance" component={() => <RouteWithMeta title="DeltrivX | FnOS 双 OpenClaw 实例并存实战" desc="商店版 + 自装版隔离、端口与 systemd 复刻" Component={ArticleFnosOpenClawDualInstance} />} />
-          <Route path="/article/fnos-hermes-store-boot" component={() => <RouteWithMeta title="DeltrivX | 飞牛系统商店版 Hermes 启动优化实战" desc="Hermes 与 App Center 共存的 systemd 引导与维护" Component={ArticleFnosHermesStore} />} />
+          <Route path="/article/fnos-hermes-store-boot" component={() => <RouteWithMeta title="DeltrivX | 飞牛系统商店版 Hermes 开机引导实战" desc="oneshot 点火 + wrapper 共存：KillMode=none、Gateway :18642、可完整复刻" Component={ArticleFnosHermesStore} />} />
           <Route path="/article/fnos-openclaw-store-optimization" component={() => <RouteWithMeta title="DeltrivX | 飞牛系统商店版 OpenClaw 优化实战" desc="FnOS 商店版 OpenClaw 优化实战" Component={ArticleFnosOpenClawStore} />} />
           <Route path="/article/homenet-qx" component={() => <RouteWithMeta title="DeltrivX | HomeNet QX 双节点实战" desc="iOS Quantumult X 异地接入内网" Component={ArticleHomenetQX} />} />
           <Route path="/article/dual-stack-domain" component={() => <RouteWithMeta title="DeltrivX | 双栈域名体系指南" desc="双栈域名体系完全指南" Component={ArticleDualStack} />} />
